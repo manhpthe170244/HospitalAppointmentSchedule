@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Định nghĩa Theme.Project_PRM392 -->
+    <style name="Theme.Project_PRM392" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Tùy chỉnh nếu cần -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryDark">@color/purple_700</item>
+        <item name="colorAccent">@color/teal_200</item>
+    </style>
+</resources>
