@@ -16,5 +16,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+   <ItemGroup>
+     <Folder Include="IRepository\" />
+     <Folder Include="IUnitOfWork\" />
+   </ItemGroup>
 
 </Project>
