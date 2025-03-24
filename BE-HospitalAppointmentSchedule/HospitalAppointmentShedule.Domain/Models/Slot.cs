@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HospitalAppointmentShedule.Server;
+namespace HospitalAppointmentShedule.Domain.Models;
 
 public partial class Slot
 {

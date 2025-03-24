@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HospitalAppointmentShedule.Server;
+using HospitalAppointmentShedule.Domain.Models;
 
 namespace HospitalAppointmentShedule.Domain.IRepository
 {
     public interface IFeedbackRepository
     {
-        Task SubmitFeedbackAsync(Feedback feedback);
-        Task<IEnumerable<Feedback>> GetDoctorFeedbackAsync(int doctorId);
-/*        Task<IEnumerable<Feedback>> GetServiceFeedbackAsync(int serviceId);*/
+        Task<IEnumerable<Feedback>> GetAllAsync();
+        Task<Feedback> GetByIdAsync(int id);
+        Task<Feedback> AddAsync(Feedback feedback);
+        Task UpdateAsync(Feedback feedback);
+        Task DeleteAsync(int id);
+        Task<IEnumerable<Feedback>> GetFeedbacksByReservationIdAsync(int reservationId);
+        Task<IEnumerable<Feedback>> GetFeedbacksByDoctorIdAsync(int doctorId);
     }
 }

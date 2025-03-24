@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HospitalAppointmentShedule.Server;
+namespace HospitalAppointmentShedule.Domain.Models;
 
 public partial class Device
 {
@@ -14,6 +14,4 @@ public partial class Device
     public string? Functionality { get; set; }
 
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
-
-    public virtual ICollection<Specialty> Specialties { get; set; } = new List<Specialty>();
 }

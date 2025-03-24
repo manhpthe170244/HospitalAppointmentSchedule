@@ -1,63 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HospitalAppointmentShedule.Server;
+namespace HospitalAppointmentShedule.Domain.Models;
 
 public partial class User
 {
-    public int Id { get; set; }
+    public int UserId { get; set; }
 
-    public long CitizenId { get; set; }
-
-    public string Name { get; set; } = null!;
-
-    public string Gender { get; set; } = null!;
-
-    public DateOnly Dob { get; set; }
-
-    public string Address { get; set; } = null!;
-
-    public string? AvatarUrl { get; set; }
-
-    public bool IsVerify { get; set; }
-
-    public string? UserName { get; set; }
-
-    public string? NormalizedUserName { get; set; }
+    public long? CitizenId { get; set; }
 
     public string? Email { get; set; }
 
-    public string? NormalizedEmail { get; set; }
+    public string Password { get; set; } = null!;
 
-    public bool EmailConfirmed { get; set; }
+    public string UserName { get; set; } = null!;
 
-    public string? PasswordHash { get; set; }
+    public string Phone { get; set; } = null!;
 
-    public string? SecurityStamp { get; set; }
+    public string? Gender { get; set; }
 
-    public string? ConcurrencyStamp { get; set; }
+    public DateOnly? Dob { get; set; }
 
-    public string? PhoneNumber { get; set; }
+    public string? Address { get; set; }
 
-    public bool PhoneNumberConfirmed { get; set; }
+    public string? AvatarUrl { get; set; }
 
-    public bool TwoFactorEnabled { get; set; }
+    public bool? IsVerify { get; set; }
 
-    public DateTimeOffset? LockoutEnd { get; set; }
-
-    public bool LockoutEnabled { get; set; }
-
-    public int AccessFailedCount { get; set; }
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual Doctor? Doctor { get; set; }
 
-    public virtual Patient? Patient { get; set; }
+    public virtual ICollection<Patient> PatientGuardians { get; set; } = new List<Patient>();
 
-    public virtual ICollection<UserClaim> UserClaims { get; set; } = new List<UserClaim>();
+    public virtual Patient? PatientPatientNavigation { get; set; }
 
-    public virtual ICollection<UserLogin> UserLogins { get; set; } = new List<UserLogin>();
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
+    public virtual Receptionist? Receptionist { get; set; }
 
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

@@ -17,9 +17,8 @@
 	</PackageReference>
 </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\HospitalAppointmentShedule.Domain\HospitalAppointmentShedule.Domain.csproj" />
+    <ProjectReference Include="..\HospitalAppointmentShedule.Infrastructure\HospitalAppointmentShedule.Infrastructure.csproj" />
     <ProjectReference Include="..\HospitalAppointmentShedule.Services\HospitalAppointmentShedule.Services.csproj" />
   </ItemGroup>
 

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HospitalAppointmentShedule.Server;
+using HospitalAppointmentShedule.Domain.Models;
+using HospitalAppointmentShedule.Infrastructure.DBContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace HospitalAppointmentShedule.Infrastructure.Repository

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using HospitalAppointmentShedule.Domain.Models;
 
-namespace HospitalAppointmentShedule.Server;
+namespace HospitalAppointmentShedule.Domain.Models;
 
 public partial class DoctorSchedule
 {
@@ -19,11 +20,11 @@ public partial class DoctorSchedule
 
     public virtual Doctor Doctor { get; set; } = null!;
 
-    public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
-
     public virtual Room Room { get; set; } = null!;
 
     public virtual Service Service { get; set; } = null!;
 
     public virtual Slot Slot { get; set; } = null!;
+
+    public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }
