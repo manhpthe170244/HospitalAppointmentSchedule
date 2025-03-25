@@ -1,0 +1,45 @@
+Role Admin:
+-Quản lý bác sĩ:
+-Thêm/sửa/xóa thông tin bác sĩ
+-Quản lý lịch làm việc của bác sĩ
+-Phân công bác sĩ theo chuyên khoa
+-Quản lý chuyên khoa:
+-Thêm/sửa/xóa các chuyên khoa
+-Quản lý danh sách dịch vụ khám theo từng chuyên khoa
+-Cập nhật giá dịch vụ
+-Quản lý lịch hẹn:
+-Xem tất cả lịch hẹn trong hệ thống
+-Phê duyệt/từ chối lịch hẹn
+-Điều chỉnh thời gian khám nếu cần
+-Gửi thông báo đến người dùng
+-Quản lý người dùng:
+-Xem danh sách người dùng
+-Khóa/mở khóa tài khoản
+-Quản lý phân quyền
+-Báo cáo thống kê:
+-Thống kê số lượng lịch hẹn theo ngày/tuần/tháng
+-Báo cáo doanh thu
+-Thống kê bệnh nhân theo chuyên khoa
+-2. Role User (Bệnh nhân):
+-Quản lý tài khoản:
+-Đăng ký/đăng nhập
+-Cập nhật thông tin cá nhân
+-Quản lý hồ sơ bệnh án
+-Đặt lịch khám:
+-Xem danh sách bác sĩ và chuyên khoa
+-Chọn ngày giờ khám phù hợp
+-Đặt lịch khám mới
+-Xem lịch sử đặt khám
+-Hủy/đổi lịch khám
+-Thanh toán:
+-Xem chi phí khám
+-Thanh toán trực tuyến
+-Xem lịch sử thanh toán
+-Tương tác:
+-Nhận thông báo về lịch hẹn
+-Đánh giá bác sĩ sau khi khám
+-Các tính năng chung:
+Xác thực và Phân quyền:
+JWT Authentication
+Role-based Authorization
+Refresh token mechanism
