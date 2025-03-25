@@ -10,12 +10,21 @@
     <Compile Remove="DTOs\Admin\**" />
     <Compile Remove="DTOs\Auth\**" />
     <Compile Remove="DTOs\User\**" />
+    <Compile Remove="IService\**" />
+    <Compile Remove="Profile\**" />
+    <Compile Remove="Service\**" />
     <EmbeddedResource Remove="DTOs\Admin\**" />
     <EmbeddedResource Remove="DTOs\Auth\**" />
     <EmbeddedResource Remove="DTOs\User\**" />
+    <EmbeddedResource Remove="IService\**" />
+    <EmbeddedResource Remove="Profile\**" />
+    <EmbeddedResource Remove="Service\**" />
     <None Remove="DTOs\Admin\**" />
     <None Remove="DTOs\Auth\**" />
     <None Remove="DTOs\User\**" />
+    <None Remove="IService\**" />
+    <None Remove="Profile\**" />
+    <None Remove="Service\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,11 +41,6 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
-    <Folder Include="IService\" />
-    <Folder Include="IService\Admin\" />
-    <Folder Include="Profile\" />
-    <Folder Include="Service\" />
-    <Folder Include="Service\Admin\" />
   </ItemGroup>
 
 </Project>

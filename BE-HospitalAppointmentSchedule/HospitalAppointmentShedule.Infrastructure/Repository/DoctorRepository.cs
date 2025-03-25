@@ -77,10 +77,11 @@ namespace HospitalAppointmentShedule.Infrastructure.Repository
 
             if (date.HasValue)
             {
-                query = query.Where(r => r.AppointmentDate.Date == date.Value.Date);
+                query = query.Where(r => r.AppointmentDate.HasValue && r.AppointmentDate.Value.Date == date.Value.Date);
             }
 
             return await query.ToListAsync();
         }
+
     }
 } 

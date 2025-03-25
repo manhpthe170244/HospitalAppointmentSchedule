@@ -1,5 +1,6 @@
 using HospitalAppointmentShedule.Domain.IRepository;
 using HospitalAppointmentShedule.Domain.IUnitOfWork;
+using HospitalAppointmentShedule.Domain.Repository;
 using HospitalAppointmentShedule.Infrastructure.Data;
 using HospitalAppointmentShedule.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ namespace HospitalAppointmentShedule.Infrastructure.UnitOfWork
         public IDoctorRepository Doctors { get; private set; }
         public IServiceRepository Services { get; private set; }
         public IReservationRepository Reservations { get; private set; }
-
+     public IPatientRepository Patients => new PatientRepository(_context);
         public UnitOfWork(AppointmentSchedulingDbContext context)
         {
             _context = context;

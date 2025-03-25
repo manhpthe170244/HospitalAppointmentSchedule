@@ -5,13 +5,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using HospitalAppointmentShedule.Infrastructure.Data;
-
-
-using System.Security.Claims;
+using HospitalAppointmentShedule.Domain.IUnitOfWork;
+using HospitalAppointmentShedule.Domain.IRepository;
+using HospitalAppointmentShedule.Infrastructure.Repository;
+using HospitalAppointmentShedule.Services.Interfaces;
+using HospitalAppointmentShedule.Services.Services;
 using HospitalAppointmentShedule.Domain.Models;
 using System.Text.Json.Serialization;
+using HospitalAppointmentShedule.Infrastructure.UnitOfWork;
+using System.Security.Claims;
+using HospitalAppointmentShedule.Domain.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,20 +129,25 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Register Repositories and Services
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 
-
-
-
-
-
-// Register Patient Repositories
-
+// Register Services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 // Add Authorization
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
-   
 });
 
 var app = builder.Build();
@@ -156,8 +165,6 @@ app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-
 
 app.MapControllers();
 

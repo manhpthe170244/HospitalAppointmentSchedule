@@ -180,14 +180,14 @@ namespace HospitalAppointmentShedule.Services.Services
             await _unitOfWork.SaveChangesAsync();
             
             // Associate with doctor schedule
-            var reservationDoctorSchedule = new ReservationDoctorSchedule
+            var reservationDoctorSchedule = new Dictionary<string, object>
             {
-                ReservationId = reservation.ReservationId,
-                DoctorScheduleId = reservationDto.DoctorScheduleId
+                { "ReservationId", reservation.ReservationId },
+                { "DoctorScheduleId", reservationDto.DoctorScheduleId }
             };
             
             // Save the relationship
-            await _unitOfWork.Repository<ReservationDoctorSchedule>().AddAsync(reservationDoctorSchedule);
+            await _unitOfWork.Repository<Dictionary<string, object>>().AddAsync(reservationDoctorSchedule);
             await _unitOfWork.SaveChangesAsync();
             
             // Get the complete reservation with details
@@ -224,7 +224,7 @@ namespace HospitalAppointmentShedule.Services.Services
                     return ResultDto<ReservationDto>.Failure("Doctor schedule not found");
                 
                 // Check appointment date day matches schedule day
-                var appointmentDate = reservationDto.AppointmentDate ?? reservation.AppointmentDate;
+                var appointmentDate = reservationDto.AppointmentDate ?? reservation.AppointmentDate.Value;
                 if (doctorSchedule.DayOfWeek != appointmentDate.DayOfWeek.ToString())
                     return ResultDto<ReservationDto>.Failure("Appointment day does not match the doctor's schedule day");
                 
@@ -237,23 +237,23 @@ namespace HospitalAppointmentShedule.Services.Services
                     return ResultDto<ReservationDto>.Failure("This time slot is already booked");
                 
                 // Remove existing schedule relationships
-                var existingRelationships = await _unitOfWork.Repository<ReservationDoctorSchedule>().Query()
-                    .Where(rds => rds.ReservationId == reservationId)
+                var existingRelationships = await _unitOfWork.Repository<Dictionary<string, object>>().Query()
+                    .Where(rds => rds["ReservationId"].Equals(reservationId))
                     .ToListAsync();
                 
                 foreach (var relationship in existingRelationships)
                 {
-                    _unitOfWork.Repository<ReservationDoctorSchedule>().Delete(relationship);
+                    _unitOfWork.Repository<Dictionary<string, object>>().Delete(relationship);
                 }
                 
                 // Add new relationship
-                var newRelationship = new ReservationDoctorSchedule
+                var newRelationship = new Dictionary<string, object>
                 {
-                    ReservationId = reservationId,
-                    DoctorScheduleId = reservationDto.DoctorScheduleId.Value
+                    { "ReservationId", reservationId },
+                    { "DoctorScheduleId", reservationDto.DoctorScheduleId.Value }
                 };
                 
-                await _unitOfWork.Repository<ReservationDoctorSchedule>().AddAsync(newRelationship);
+                await _unitOfWork.Repository<Dictionary<string, object>>().AddAsync(newRelationship);
             }
             
             // Update properties
@@ -267,7 +267,7 @@ namespace HospitalAppointmentShedule.Services.Services
                 reservation.CancellationReason = reservationDto.CancellationReason;
                 
             if (reservationDto.Symptoms != null)
-                reservation.Symptoms = reservationDto.Symptoms;
+                reservation.Reason = reservationDto.Symptoms;
                 
             if (reservationDto.PriorExaminationImg != null)
                 reservation.PriorExaminationImg = reservationDto.PriorExaminationImg;
@@ -578,8 +578,6 @@ namespace HospitalAppointmentShedule.Services.Services
             var patient = new Patient
             {
                 PatientId = user.UserId,
-                BloodType = patientDto.BloodType,
-                Allergies = patientDto.Allergies,
                 GuardianId = patientDto.GuardianId,
                 Rank = "Regular" // Default rank
             };

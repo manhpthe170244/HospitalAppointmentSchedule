@@ -23,19 +23,19 @@ namespace HospitalAppointmentShedule.Server.Controllers
             return HandleResult(result);
         }
 
-        [HttpGet("reservations-by-status")]
-        public async Task<IActionResult> GetReservationsByStatus()
-        {
-            var result = await _statisticsService.GetReservationsCountByStatusAsync();
-            return HandleResult(result);
-        }
+        // [HttpGet("reservations-by-status")]
+        // public async Task<IActionResult> GetReservationsByStatus()
+        // {
+        //     var result = await _statisticsService.GetReservationsCountByStatusAsync();
+        //     return HandleResult(result);
+        // }
 
-        [HttpGet("reservations-by-specialty")]
-        public async Task<IActionResult> GetReservationsBySpecialty()
-        {
-            var result = await _statisticsService.GetReservationsCountBySpecialtyAsync();
-            return HandleResult(result);
-        }
+        // [HttpGet("reservations-by-specialty")]
+        // public async Task<IActionResult> GetReservationsBySpecialty()
+        // {
+        //     var result = await _statisticsService.GetReservationsCountBySpecialtyAsync();
+        //     return HandleResult(result);
+        // }
 
         [HttpGet("revenue-by-specialty")]
         public async Task<IActionResult> GetRevenueBySpecialty([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
@@ -44,19 +44,19 @@ namespace HospitalAppointmentShedule.Server.Controllers
             return HandleResult(result);
         }
 
-        [HttpGet("revenue-by-date")]
-        public async Task<IActionResult> GetRevenueByDate([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string groupBy = "day")
-        {
-            var result = await _statisticsService.GetRevenueByDateRangeAsync(startDate, endDate, groupBy);
-            return HandleResult(result);
-        }
+        // [HttpGet("revenue-by-date")]
+        // public async Task<IActionResult> GetRevenueByDate([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string groupBy = "day")
+        // {
+        //     var result = await _statisticsService.GetRevenueByDateRangeAsync(startDate, endDate, groupBy);
+        //     return HandleResult(result);
+        // }
 
-        [HttpGet("patients-by-specialty")]
-        public async Task<IActionResult> GetPatientsBySpecialty([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-        {
-            var result = await _statisticsService.GetPatientsCountBySpecialtyAsync(startDate, endDate);
-            return HandleResult(result);
-        }
+        // [HttpGet("patients-by-specialty")]
+        // public async Task<IActionResult> GetPatientsBySpecialty([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        // {
+        //     var result = await _statisticsService.GetPatientsCountBySpecialtyAsync(startDate, endDate);
+        //     return HandleResult(result);
+        // }
 
         [HttpGet("doctor-performance")]
         public async Task<IActionResult> GetDoctorPerformance([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)

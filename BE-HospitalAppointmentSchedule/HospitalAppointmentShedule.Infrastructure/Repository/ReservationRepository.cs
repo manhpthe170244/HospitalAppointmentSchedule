@@ -75,17 +75,18 @@ namespace HospitalAppointmentShedule.Infrastructure.Repository
                 .Include(r => r.DoctorSchedules)
                     .ThenInclude(ds => ds.Service)
                         .ThenInclude(s => s.Specialty)
-                .Where(r => r.DoctorSchedules.Any(ds => 
-                    ds.Doctor.Specialties.Any(s => s.SpecialtyId == specialtyId) || 
+                .Where(r => r.DoctorSchedules.Any(ds =>
+                    ds.Doctor.Specialties.Any(s => s.SpecialtyId == specialtyId) ||
                     ds.Service.SpecialtyId == specialtyId));
 
             if (date.HasValue)
             {
-                query = query.Where(r => r.AppointmentDate.Date == date.Value.Date);
+                query = query.Where(r => r.AppointmentDate.HasValue && r.AppointmentDate.Value.Date == date.Value.Date);
             }
 
             return await query.ToListAsync();
         }
+
 
         public async Task<IEnumerable<Reservation>> GetReservationsByStatusAsync(string status)
         {
@@ -116,12 +117,13 @@ namespace HospitalAppointmentShedule.Infrastructure.Repository
             // Check if there's already a reservation for this slot
             var existingReservation = await _dbSet
                 .Include(r => r.DoctorSchedules)
-                .AnyAsync(r => 
-                    r.DoctorSchedules.Any(ds => ds.DoctorScheduleId == doctorScheduleId) && 
-                    r.AppointmentDate.Date == appointmentDate.Date &&
+                .AnyAsync(r =>
+                    r.DoctorSchedules.Any(ds => ds.DoctorScheduleId == doctorScheduleId) &&
+                    r.AppointmentDate.HasValue && r.AppointmentDate.Value.Date == appointmentDate.Date &&
                     (r.Status == "Đã xác nhận" || r.Status == "Chờ thanh toán" || r.Status == "Đã thanh toán"));
 
             return !existingReservation;
         }
+
     }
 } 

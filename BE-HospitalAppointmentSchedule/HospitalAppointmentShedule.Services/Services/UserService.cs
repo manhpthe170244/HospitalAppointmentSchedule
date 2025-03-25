@@ -194,7 +194,7 @@ namespace HospitalAppointmentShedule.Services.Services
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
             
-            return ResultDto<bool>.Success(true, $"User status updated to {(user.IsVerify ? "active" : "inactive")}");
+            return ResultDto<bool>.Success(true, $"User status updated to {(user.IsVerify ?? false ? "active" : "inactive")}");
         }
 
         public async Task<ResultDto<bool>> AssignRolesToUserAsync(int userId, List<int> roleIds)
@@ -239,7 +239,7 @@ namespace HospitalAppointmentShedule.Services.Services
                 return ResultDto<LoginResponseDto>.Failure("Invalid login credentials");
             
             // Check if user is verified/active
-            if (!user.IsVerify)
+            if (user.IsVerify == false)
                 return ResultDto<LoginResponseDto>.Failure("Account is not active. Please contact support.");
             
             // Load roles for token generation
@@ -292,7 +292,7 @@ namespace HospitalAppointmentShedule.Services.Services
             
             var user = refreshTokenEntity.User;
             
-            if (!user.IsVerify)
+            if (user.IsVerify == false)
                 return ResultDto<LoginResponseDto>.Failure("Account is not active");
             
             // Generate new JWT token

@@ -9,6 +9,7 @@ namespace HospitalAppointmentShedule.Domain.IUnitOfWork
         IUserRepository Users { get; }
         IDoctorRepository Doctors { get; }
         IServiceRepository Services { get; }
+         IPatientRepository Patients { get; }
         IReservationRepository Reservations { get; }
         IGenericRepository<T> Repository<T>() where T : class;
         Task<int> SaveChangesAsync();

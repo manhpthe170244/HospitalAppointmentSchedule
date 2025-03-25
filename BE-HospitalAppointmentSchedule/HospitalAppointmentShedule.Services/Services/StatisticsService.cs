@@ -58,19 +58,21 @@ namespace HospitalAppointmentShedule.Services.Services
                 // Get today's appointments
                 var today = DateTime.Today;
                 var todayAppointments = await _unitOfWork.Reservations.Query()
-                    .Where(r => r.AppointmentDate.Date == today)
+                    .Where(r => r.AppointmentDate.HasValue && r.AppointmentDate.Value.Date == today)
                     .CountAsync();
                 
                 // Get revenue from last 30 days
                 var lastMonthDate = DateTime.Today.AddDays(-30);
                 var lastMonthRevenue = await _unitOfWork.Repository<Payment>().Query()
-                    .Where(p => p.PaymentDate >= lastMonthDate && p.PaymentStatus == "Thành công")
+                    .Where(p => p.PaymentDate.HasValue && p.PaymentDate.Value >= lastMonthDate && p.PaymentStatus == "Thành công")
                     .SumAsync(p => p.Amount);
                 
                 // Get appointments for next 7 days
                 var nextWeekDate = DateTime.Today.AddDays(7);
                 var upcomingAppointments = await _unitOfWork.Reservations.Query()
-                    .Where(r => r.AppointmentDate.Date > today && r.AppointmentDate.Date <= nextWeekDate)
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value.Date > today && 
+                               r.AppointmentDate.Value.Date <= nextWeekDate)
                     .CountAsync();
                 
                 var dashboardStats = new DashboardStatisticsDto
@@ -149,9 +151,11 @@ namespace HospitalAppointmentShedule.Services.Services
                         .ThenInclude(r => r.DoctorSchedules)
                             .ThenInclude(ds => ds.Service)
                                 .ThenInclude(s => s.Specialty)
-                    .Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate && 
-                           p.PaymentStatus == "Thành công" && 
-                           p.Reservation.DoctorSchedules.Any(ds => ds.Service.Specialty != null))
+                    .Where(p => p.PaymentDate.HasValue && 
+                               p.PaymentDate.Value >= startDate && 
+                               p.PaymentDate.Value <= endDate && 
+                               p.PaymentStatus == "Thành công" && 
+                               p.Reservation.DoctorSchedules.Any(ds => ds.Service.Specialty != null))
                     .GroupBy(p => p.Reservation.DoctorSchedules.First().Service.Specialty.SpecialtyName)
                     .Select(g => new { Specialty = g.Key, Amount = g.Sum(p => p.Amount) })
                     .ToDictionaryAsync(x => x.Specialty, x => x.Amount);
@@ -172,8 +176,10 @@ namespace HospitalAppointmentShedule.Services.Services
                 endDate = endDate.Date.AddDays(1).AddTicks(-1);
                 
                 var query = _unitOfWork.Repository<Payment>().Query()
-                    .Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate && 
-                           p.PaymentStatus == "Thành công");
+                    .Where(p => p.PaymentDate.HasValue && 
+                               p.PaymentDate.Value >= startDate && 
+                               p.PaymentDate.Value <= endDate && 
+                               p.PaymentStatus == "Thành công");
                 
                 // Group by different time periods
                 List<RevenueByDateDto> result;
@@ -182,7 +188,7 @@ namespace HospitalAppointmentShedule.Services.Services
                 {
                     case "month":
                         result = await query
-                            .GroupBy(p => new { Year = p.PaymentDate.Year, Month = p.PaymentDate.Month })
+                            .GroupBy(p => new { Year = p.PaymentDate.Value.Year, Month = p.PaymentDate.Value.Month })
                             .Select(g => new RevenueByDateDto
                             {
                                 Period = $"{g.Key.Year}-{g.Key.Month:D2}",
@@ -196,8 +202,8 @@ namespace HospitalAppointmentShedule.Services.Services
                     case "week":
                         result = await query
                             .GroupBy(p => new { 
-                                Year = p.PaymentDate.Year, 
-                                Week = EF.Functions.DateDiffWeek(new DateTime(p.PaymentDate.Year, 1, 1), p.PaymentDate) + 1
+                                Year = p.PaymentDate.Value.Year, 
+                                Week = EF.Functions.DateDiffWeek(new DateTime(p.PaymentDate.Value.Year, 1, 1), p.PaymentDate.Value) + 1
                             })
                             .Select(g => new RevenueByDateDto
                             {
@@ -212,7 +218,7 @@ namespace HospitalAppointmentShedule.Services.Services
                     case "day":
                     default:
                         result = await query
-                            .GroupBy(p => p.PaymentDate.Date)
+                            .GroupBy(p => p.PaymentDate.Value.Date)
                             .Select(g => new RevenueByDateDto
                             {
                                 Period = g.Key.ToString("yyyy-MM-dd"),
@@ -243,8 +249,10 @@ namespace HospitalAppointmentShedule.Services.Services
                     .Include(r => r.DoctorSchedules)
                         .ThenInclude(ds => ds.Service)
                             .ThenInclude(s => s.Specialty)
-                    .Where(r => r.AppointmentDate >= startDate && r.AppointmentDate <= endDate && 
-                           r.DoctorSchedules.Any(ds => ds.Service.Specialty != null))
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value >= startDate && 
+                               r.AppointmentDate.Value <= endDate && 
+                               r.DoctorSchedules.Any(ds => ds.Service.Specialty != null))
                     .GroupBy(r => new { 
                         SpecialtyName = r.DoctorSchedules.First().Service.Specialty.SpecialtyName,
                         PatientId = r.PatientId
@@ -279,7 +287,9 @@ namespace HospitalAppointmentShedule.Services.Services
                     // Get doctor's completed reservations
                     var completedReservations = await _unitOfWork.Reservations.Query()
                         .Include(r => r.DoctorSchedules)
-                        .Where(r => r.AppointmentDate >= startDate && r.AppointmentDate <= endDate &&
+                        .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value >= startDate && 
+                               r.AppointmentDate.Value <= endDate &&
                                r.Status == "Đã hoàn thành" &&
                                r.DoctorSchedules.Any(ds => ds.DoctorId == doctor.DoctorId))
                         .CountAsync();
@@ -288,7 +298,9 @@ namespace HospitalAppointmentShedule.Services.Services
                     var revenue = await _unitOfWork.Repository<Payment>().Query()
                         .Include(p => p.Reservation)
                             .ThenInclude(r => r.DoctorSchedules)
-                        .Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate &&
+                        .Where(p => p.PaymentDate.HasValue && 
+                               p.PaymentDate.Value >= startDate && 
+                               p.PaymentDate.Value <= endDate &&
                                p.PaymentStatus == "Thành công" &&
                                p.Reservation.DoctorSchedules.Any(ds => ds.DoctorId == doctor.DoctorId))
                         .SumAsync(p => p.Amount);
@@ -296,7 +308,9 @@ namespace HospitalAppointmentShedule.Services.Services
                     // Get doctor's patient count (unique patients)
                     var patientCount = await _unitOfWork.Reservations.Query()
                         .Include(r => r.DoctorSchedules)
-                        .Where(r => r.AppointmentDate >= startDate && r.AppointmentDate <= endDate &&
+                        .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value >= startDate && 
+                               r.AppointmentDate.Value <= endDate &&
                                r.DoctorSchedules.Any(ds => ds.DoctorId == doctor.DoctorId))
                         .Select(r => r.PatientId)
                         .Distinct()
@@ -306,12 +320,13 @@ namespace HospitalAppointmentShedule.Services.Services
                     var feedbacks = await _unitOfWork.Repository<Feedback>().Query()
                         .Include(f => f.Reservation)
                             .ThenInclude(r => r.DoctorSchedules)
-                        .Where(f => f.Reservation.AppointmentDate >= startDate && 
-                               f.Reservation.AppointmentDate <= endDate &&
+                        .Where(f => f.Reservation.AppointmentDate.HasValue && 
+                               f.Reservation.AppointmentDate.Value >= startDate && 
+                               f.Reservation.AppointmentDate.Value <= endDate &&
                                f.Reservation.DoctorSchedules.Any(ds => ds.DoctorId == doctor.DoctorId))
                         .ToListAsync();
                     
-                    var averageRating = feedbacks.Any() ? feedbacks.Average(f => f.Rating) : 0;
+                    var averageRating = feedbacks.Any() ? feedbacks.Average(f => f.DoctorFeedbackGrade ?? 0) : 0;
                     
                     result.Add(new DoctorPerformanceDto
                     {
@@ -345,8 +360,10 @@ namespace HospitalAppointmentShedule.Services.Services
                 
                 // Get daily reservation counts
                 var dailyReservations = await _unitOfWork.Reservations.Query()
-                    .Where(r => r.AppointmentDate.Date >= startDate && r.AppointmentDate.Date <= endDate)
-                    .GroupBy(r => r.AppointmentDate.Date)
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value.Date >= startDate && 
+                               r.AppointmentDate.Value.Date <= endDate)
+                    .GroupBy(r => r.AppointmentDate.Value.Date)
                     .Select(g => new { Date = g.Key, Count = g.Count() })
                     .ToDictionaryAsync(x => x.Date.ToString("yyyy-MM-dd"), x => x.Count);
                 
@@ -362,11 +379,15 @@ namespace HospitalAppointmentShedule.Services.Services
                 
                 // Get growth rate
                 var totalPreviousPeriod = await _unitOfWork.Reservations.Query()
-                    .Where(r => r.AppointmentDate.Date >= startDate.AddDays(-days) && r.AppointmentDate.Date < startDate)
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value.Date >= startDate.AddDays(-days) && 
+                               r.AppointmentDate.Value.Date < startDate)
                     .CountAsync();
                 
                 var totalCurrentPeriod = await _unitOfWork.Reservations.Query()
-                    .Where(r => r.AppointmentDate.Date >= startDate && r.AppointmentDate.Date <= endDate)
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value.Date >= startDate && 
+                               r.AppointmentDate.Value.Date <= endDate)
                     .CountAsync();
                 
                 var growthRate = totalPreviousPeriod > 0 
@@ -398,8 +419,10 @@ namespace HospitalAppointmentShedule.Services.Services
                 var topServices = await _unitOfWork.Reservations.Query()
                     .Include(r => r.DoctorSchedules)
                         .ThenInclude(ds => ds.Service)
-                    .Where(r => r.AppointmentDate >= startDate && r.AppointmentDate <= endDate &&
-                           r.Status != "Đã hủy")
+                    .Where(r => r.AppointmentDate.HasValue && 
+                               r.AppointmentDate.Value >= startDate && 
+                               r.AppointmentDate.Value <= endDate &&
+                               r.Status != "Đã hủy")
                     .SelectMany(r => r.DoctorSchedules.Select(ds => ds.Service))
                     .GroupBy(s => new { s.ServiceId, s.ServiceName, s.Price })
                     .Select(g => new TopServiceDto
@@ -420,5 +443,6 @@ namespace HospitalAppointmentShedule.Services.Services
                 return ResultDto<List<TopServiceDto>>.Failure("Failed to get top services: " + ex.Message);
             }
         }
+
     }
 } 

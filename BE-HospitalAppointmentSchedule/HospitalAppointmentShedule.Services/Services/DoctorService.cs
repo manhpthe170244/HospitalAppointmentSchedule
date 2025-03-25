@@ -134,8 +134,8 @@ namespace HospitalAppointmentShedule.Services.Services
                 DoctorId = user.UserId,
                 Degree = doctorDto.Degree,
                 AcademicTitle = doctorDto.AcademicTitle,
-                Experience = doctorDto.Experience,
-                Biography = doctorDto.Biography
+                WorkExperience = doctorDto.Experience?.ToString(),
+                DoctorDescription = doctorDto.Biography
             };
             
             // Assign specialties
@@ -191,10 +191,10 @@ namespace HospitalAppointmentShedule.Services.Services
                 doctor.AcademicTitle = doctorDto.AcademicTitle;
                 
             if (doctorDto.Experience.HasValue)
-                doctor.Experience = doctorDto.Experience;
+                doctor.WorkExperience = doctorDto.Experience.Value.ToString();
                 
             if (doctorDto.Biography != null)
-                doctor.Biography = doctorDto.Biography;
+                doctor.DoctorDescription = doctorDto.Biography;
             
             // Update specialties if provided
             if (doctorDto.SpecialtyIds != null && doctorDto.SpecialtyIds.Any())
@@ -376,8 +376,7 @@ namespace HospitalAppointmentShedule.Services.Services
             var certification = new Certification
             {
                 DoctorId = doctorId,
-                CertificationUrl = url,
-                Description = description
+                CertificationUrl = url
             };
             
             await _unitOfWork.Repository<Certification>().AddAsync(certification);
