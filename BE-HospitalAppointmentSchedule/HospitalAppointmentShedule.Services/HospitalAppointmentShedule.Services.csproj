@@ -7,7 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DTOs\Admin\**" />
+    <Compile Remove="DTOs\Auth\**" />
+    <Compile Remove="DTOs\User\**" />
+    <EmbeddedResource Remove="DTOs\Admin\**" />
+    <EmbeddedResource Remove="DTOs\Auth\**" />
+    <EmbeddedResource Remove="DTOs\User\**" />
+    <None Remove="DTOs\Admin\**" />
+    <None Remove="DTOs\Auth\**" />
+    <None Remove="DTOs\User\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="FluentValidation" Version="11.9.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,8 +32,11 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
+    <Folder Include="IService\" />
+    <Folder Include="IService\Admin\" />
     <Folder Include="Profile\" />
     <Folder Include="Service\" />
+    <Folder Include="Service\Admin\" />
   </ItemGroup>
 
 </Project>

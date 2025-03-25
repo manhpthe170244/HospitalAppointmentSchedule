@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HospitalAppointmentShedule.Domain.Models;
 
 namespace HospitalAppointmentShedule.Domain.Models;
 

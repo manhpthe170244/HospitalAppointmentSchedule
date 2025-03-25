@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 namespace HospitalAppointmentShedule.Domain.Models;
-
 public partial class Service
 {
     public int ServiceId { get; set; }

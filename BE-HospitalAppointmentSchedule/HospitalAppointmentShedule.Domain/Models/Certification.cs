@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+
 namespace HospitalAppointmentShedule.Domain.Models;
 
 public partial class Certification

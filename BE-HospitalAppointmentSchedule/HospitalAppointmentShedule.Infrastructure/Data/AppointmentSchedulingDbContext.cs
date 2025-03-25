@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using HospitalAppointmentShedule.Domain.Models;
+
 using Microsoft.EntityFrameworkCore;
 
-namespace HospitalAppointmentShedule.Infrastructure.DBContext;
+namespace HospitalAppointmentShedule.Infrastructure.Data;
 
 public partial class AppointmentSchedulingDbContext : DbContext
 {
@@ -53,6 +54,8 @@ public partial class AppointmentSchedulingDbContext : DbContext
     public virtual DbSet<Specialty> Specialties { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -444,6 +447,22 @@ public partial class AppointmentSchedulingDbContext : DbContext
                         j.HasKey("UserId", "RoleId").HasName("PK__UserRole__AF2760ADB52720BD");
                         j.ToTable("UserRoles");
                     });
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__RefreshT__3214EC07D4E5F1B5");
+
+            entity.Property(e => e.Token).HasMaxLength(500);
+            entity.Property(e => e.Expires).HasColumnType("datetime");
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.Revoked).HasColumnType("datetime");
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_RefreshTokens_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);
