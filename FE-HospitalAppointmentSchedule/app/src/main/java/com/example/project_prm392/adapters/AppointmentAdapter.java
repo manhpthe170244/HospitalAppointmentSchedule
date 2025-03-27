@@ -49,41 +49,32 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
         ReservationResponse appointment = appointmentsList.get(position);
         
-        holder.tvAppointmentDate.setText(appointment.getAppointmentDate().split("T")[0]);
-        holder.tvAppointmentTime.setText(appointment.getSlotTime());
+        // Set appointment details
+        holder.tvAppointmentDate.setText(appointment.getFormattedDate());
+        holder.tvAppointmentTime.setText(appointment.getFormattedTime());
         holder.tvAppointmentStatus.setText(appointment.getStatus());
         
-        // Set status text color based on status
-        switch (appointment.getStatus().toLowerCase()) {
-            case "confirmed":
-            case "approved":
-                holder.tvAppointmentStatus.setTextColor(0xFF4CAF50); // Green
-                break;
-            case "pending":
-                holder.tvAppointmentStatus.setTextColor(0xFFFF9800); // Orange
-                break;
-            case "cancelled":
-                holder.tvAppointmentStatus.setTextColor(0xFFF44336); // Red
-                break;
-            case "completed":
-                holder.tvAppointmentStatus.setTextColor(0xFF2196F3); // Blue
-                break;
-        }
-        
+        // Set doctor and specialty
         holder.tvDoctorName.setText(appointment.getDoctorName());
         holder.tvSpecialty.setText(appointment.getServiceName());
         holder.tvReason.setText(appointment.getReason());
         
-        // Only show action buttons for upcoming appointments
-        if (appointment.getStatus().equalsIgnoreCase("confirmed") || 
-            appointment.getStatus().equalsIgnoreCase("approved") ||
-            appointment.getStatus().equalsIgnoreCase("pending")) {
-            holder.btnReschedule.setVisibility(View.VISIBLE);
-            holder.btnCancelAppointment.setVisibility(View.VISIBLE);
-        } else {
-            holder.btnReschedule.setVisibility(View.GONE);
-            holder.btnCancelAppointment.setVisibility(View.GONE);
-        }
+        // Show/hide buttons based on appointment status
+        boolean isPending = "pending".equalsIgnoreCase(appointment.getStatus());
+        holder.btnReschedule.setVisibility(isPending ? View.VISIBLE : View.GONE);
+        holder.btnCancelAppointment.setVisibility(isPending ? View.VISIBLE : View.GONE);
+        
+        // Set status color
+        int statusColor = holder.itemView.getContext().getColor(
+            switch (appointment.getStatus().toLowerCase()) {
+                case "pending" -> R.color.statusPending;
+                case "approved" -> R.color.statusApproved;
+                case "completed" -> R.color.statusCompleted;
+                case "cancelled" -> R.color.statusCancelled;
+                default -> R.color.statusPending;
+            }
+        );
+        holder.tvAppointmentStatus.setTextColor(statusColor);
     }
 
     @Override

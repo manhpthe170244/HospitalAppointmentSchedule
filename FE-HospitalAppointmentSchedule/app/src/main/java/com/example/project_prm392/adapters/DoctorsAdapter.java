@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.project_prm392.R;
 import com.example.project_prm392.models.responses.DoctorResponse;
 
@@ -82,41 +83,21 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.DoctorVi
         }
         
         public void bind(DoctorResponse doctor) {
-            tvDoctorName.setText(doctor.getUserName());
+            tvDoctorName.setText(doctor.getDoctorName());
+            tvSpecialty.setText(doctor.getSpecialtyName());
+            tvDegree.setText(doctor.getDegree());
             
-            // Set specialty
-            if (doctor.getSpecialtyName() != null && !doctor.getSpecialtyName().isEmpty()) {
-                tvSpecialty.setText(doctor.getSpecialtyName());
-                tvSpecialty.setVisibility(View.VISIBLE);
-            } else if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
-                tvSpecialty.setText(String.join(", ", doctor.getSpecialties()));
-                tvSpecialty.setVisibility(View.VISIBLE);
+            // Set default doctor avatar if no image URL is provided
+            if (doctor.getImageUrl() != null && !doctor.getImageUrl().isEmpty()) {
+                Glide.with(imgDoctor.getContext())
+                    .load(doctor.getImageUrl())
+                    .placeholder(R.drawable.ic_doctor_avatar)
+                    .error(R.drawable.ic_doctor_avatar)
+                    .circleCrop()
+                    .into(imgDoctor);
             } else {
-                tvSpecialty.setVisibility(View.GONE);
+                imgDoctor.setImageResource(R.drawable.ic_doctor_avatar);
             }
-            
-            // Set degree and title
-            StringBuilder credentials = new StringBuilder();
-            if (doctor.getAcademicTitle() != null && !doctor.getAcademicTitle().isEmpty()) {
-                credentials.append(doctor.getAcademicTitle());
-            }
-            
-            if (doctor.getDegree() != null && !doctor.getDegree().isEmpty()) {
-                if (credentials.length() > 0) {
-                    credentials.append(", ");
-                }
-                credentials.append(doctor.getDegree());
-            }
-            
-            if (credentials.length() > 0) {
-                tvDegree.setText(credentials.toString());
-                tvDegree.setVisibility(View.VISIBLE);
-            } else {
-                tvDegree.setVisibility(View.GONE);
-            }
-            
-            // Set doctor image
-            imgDoctor.setImageResource(R.drawable.ic_doctor_avatar);
         }
     }
 } 

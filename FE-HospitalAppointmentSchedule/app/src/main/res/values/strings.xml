@@ -1,3 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Project_PRM392</string>
+    <string name="app_name">Hospital Appointment Schedule</string>
+    
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="add">Add</string>
+    <string name="search">Search</string>
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="retry">Retry</string>
+    <string name="logout">Logout</string>
+    
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="have_account">Already have an account?</string>
+    
+    <!-- Admin Dashboard -->
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="doctors">Doctors</string>
+    <string name="specialties">Specialties</string>
+    <string name="services">Services</string>
+    <string name="appointments">Appointments</string>
+    <string name="users">Users</string>
+    <string name="statistics">Statistics</string>
+    
+    <!-- Doctor Management -->
+    <string name="add_doctor">Add Doctor</string>
+    <string name="edit_doctor">Edit Doctor</string>
+    <string name="delete_doctor">Delete Doctor</string>
+    <string name="doctor_name">Doctor Name</string>
+    <string name="doctor_specialty">Specialty</string>
+    <string name="doctor_experience">Years of Experience</string>
+    <string name="doctor_schedule">Schedule</string>
+    <string name="doctor_certifications">Certifications</string>
+    
+    <!-- Specialty Management -->
+    <string name="add_specialty">Add Specialty</string>
+    <string name="edit_specialty">Edit Specialty</string>
+    <string name="delete_specialty">Delete Specialty</string>
+    <string name="specialty_name">Specialty Name</string>
+    <string name="specialty_description">Description</string>
+    
+    <!-- Service Management -->
+    <string name="add_service">Add Service</string>
+    <string name="edit_service">Edit Service</string>
+    <string name="delete_service">Delete Service</string>
+    <string name="service_name">Service Name</string>
+    <string name="service_price">Price</string>
+    <string name="service_duration">Duration (minutes)</string>
+    <string name="service_description">Description</string>
+    
+    <!-- Appointment Management -->
+    <string name="appointment_details">Appointment Details</string>
+    <string name="appointment_date">Date</string>
+    <string name="appointment_time">Time</string>
+    <string name="appointment_status">Status</string>
+    <string name="appointment_patient">Patient</string>
+    <string name="appointment_doctor">Doctor</string>
+    <string name="appointment_service">Service</string>
+    <string name="approve_appointment">Approve</string>
+    <string name="reject_appointment">Reject</string>
+    <string name="reschedule_appointment">Reschedule</string>
+    
+    <!-- User Management -->
+    <string name="user_details">User Details</string>
+    <string name="user_name">Name</string>
+    <string name="user_email">Email</string>
+    <string name="user_phone">Phone</string>
+    <string name="user_role">Role</string>
+    <string name="user_status">Status</string>
+    <string name="block_user">Block User</string>
+    <string name="unblock_user">Unblock User</string>
+    
+    <!-- Statistics -->
+    <string name="appointments_stats">Appointment Statistics</string>
+    <string name="revenue_stats">Revenue Statistics</string>
+    <string name="patient_stats">Patient Statistics</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
+    <string name="yearly">Yearly</string>
 </resources>
