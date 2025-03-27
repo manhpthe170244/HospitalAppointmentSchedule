@@ -25,7 +25,7 @@ namespace HospitalAppointmentShedule.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetReservation(int id)
         {
             var result = await _reservationService.GetReservationByIdAsync(id);

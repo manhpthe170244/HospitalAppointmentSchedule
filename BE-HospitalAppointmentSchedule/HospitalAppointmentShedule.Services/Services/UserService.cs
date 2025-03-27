@@ -14,6 +14,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using BCrypt.Net;
 
 namespace HospitalAppointmentShedule.Services.Services
 {
@@ -22,12 +24,14 @@ namespace HospitalAppointmentShedule.Services.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, ILogger<UserService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<ResultDto<UserDto>> GetUserByIdAsync(int userId)
@@ -224,54 +228,90 @@ namespace HospitalAppointmentShedule.Services.Services
 
         public async Task<ResultDto<LoginResponseDto>> LoginAsync(LoginRequestDto loginRequest)
         {
-            // Try to find user by email
-            var user = await _unitOfWork.Users.GetByEmailAsync(loginRequest.EmailOrPhone);
-            
-            // If not found, try by phone
-            if (user == null)
-                user = await _unitOfWork.Users.GetByPhoneAsync(loginRequest.EmailOrPhone);
-            
-            if (user == null)
-                return ResultDto<LoginResponseDto>.Failure("Invalid login credentials");
-            
-            // Verify password
-            if (!VerifyPassword(loginRequest.Password, user.Password))
-                return ResultDto<LoginResponseDto>.Failure("Invalid login credentials");
-            
-            // Check if user is verified/active
-            if (user.IsVerify == false)
-                return ResultDto<LoginResponseDto>.Failure("Account is not active. Please contact support.");
-            
-            // Load roles for token generation
-            user = await _unitOfWork.Users.GetUserWithRolesAsync(user.UserId);
-            
-            // Generate JWT token
-            var token = GenerateJwtToken(user);
-            var refreshToken = GenerateRefreshToken();
-            
-            // Save refresh token to database
-            var refreshTokenEntity = new RefreshToken
+            try
             {
-                Token = refreshToken,
-                UserId = user.UserId,
-                Created = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.AddDays(7)
-            };
-            
-            await _unitOfWork.Repository<RefreshToken>().AddAsync(refreshTokenEntity);
-            await _unitOfWork.SaveChangesAsync();
-            
-            var userDto = _mapper.Map<UserDto>(user);
-            
-            var response = new LoginResponseDto
+                _logger.LogInformation($"Attempting login for user: {loginRequest.EmailOrPhone}");
+                
+                // Normalize email/phone input
+                var searchTerm = loginRequest.EmailOrPhone?.Trim();
+                _logger.LogDebug($"Normalized search term: {searchTerm}");
+
+                // Try to find user by exact match first
+                var user = await _unitOfWork.Users.Query()
+                    .FirstOrDefaultAsync(u => u.Email == searchTerm || u.Phone == searchTerm);
+
+                // If not found, try partial match for email (in case @ is missing)
+                if (user == null && searchTerm.Contains("@"))
+                {
+                    var emailParts = searchTerm.Split('@');
+                    if (emailParts.Length == 2)
+                    {
+                        var partialEmail = emailParts[0] + emailParts[1];
+                        _logger.LogDebug($"Trying partial email match: {partialEmail}");
+                        user = await _unitOfWork.Users.Query()
+                            .FirstOrDefaultAsync(u => u.Email.Replace("@", "") == partialEmail);
+                    }
+                }
+                
+                if (user == null)
+                {
+                    _logger.LogWarning($"Login failed: User not found for {searchTerm}");
+                    return ResultDto<LoginResponseDto>.Failure("Thông tin đăng nhập không chính xác");
+                }
+                
+                _logger.LogInformation($"User found: {user.UserId}, Email: {user.Email}, verifying password");
+                
+                // Verify password
+                if (!VerifyPassword(loginRequest.Password, user.Password))
+                {
+                    _logger.LogWarning($"Login failed: Invalid password for user {user.UserId}");
+                    return ResultDto<LoginResponseDto>.Failure("Thông tin đăng nhập không chính xác");
+                }
+                
+                // Check if user is verified/active
+                if (user.IsVerify == false)
+                {
+                    _logger.LogWarning($"Login failed: Account not active for user {user.UserId}");
+                    return ResultDto<LoginResponseDto>.Failure("Tài khoản chưa được kích hoạt. Vui lòng liên hệ hỗ trợ.");
+                }
+                
+                // Load roles for token generation
+                user = await _unitOfWork.Users.GetUserWithRolesAsync(user.UserId);
+                
+                // Generate JWT token
+                var token = GenerateJwtToken(user);
+                var refreshToken = GenerateRefreshToken();
+                
+                // Save refresh token to database
+                var refreshTokenEntity = new RefreshToken
+                {
+                    Token = refreshToken,
+                    UserId = user.UserId,
+                    Created = DateTime.UtcNow,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                };
+                
+                await _unitOfWork.Repository<RefreshToken>().AddAsync(refreshTokenEntity);
+                await _unitOfWork.SaveChangesAsync();
+                
+                var userDto = _mapper.Map<UserDto>(user);
+                
+                var response = new LoginResponseDto
+                {
+                    User = userDto,
+                    AccessToken = token,
+                    RefreshToken = refreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddHours(1)
+                };
+                
+                _logger.LogInformation($"Login successful for user {user.UserId}");
+                return ResultDto<LoginResponseDto>.Success(response, "Đăng nhập thành công");
+            }
+            catch (Exception ex)
             {
-                User = userDto,
-                AccessToken = token,
-                RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddHours(1) // Token expiration time
-            };
-            
-            return ResultDto<LoginResponseDto>.Success(response, "Login successful");
+                _logger.LogError(ex, $"Error during login for user {loginRequest.EmailOrPhone}");
+                return ResultDto<LoginResponseDto>.Failure("Có lỗi xảy ra trong quá trình đăng nhập");
+            }
         }
 
         public async Task<ResultDto<LoginResponseDto>> RefreshTokenAsync(string refreshToken)
@@ -295,7 +335,6 @@ namespace HospitalAppointmentShedule.Services.Services
             if (user.IsVerify == false)
                 return ResultDto<LoginResponseDto>.Failure("Account is not active");
             
-            // Generate new JWT token
             var token = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
             
@@ -346,76 +385,78 @@ namespace HospitalAppointmentShedule.Services.Services
         #region Helper Methods
         private string HashPassword(string password)
         {
-            using var hmac = new HMACSHA512();
-            var salt = hmac.Key;
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            
-            var hashWithSalt = new byte[hash.Length + salt.Length];
-            Array.Copy(hash, 0, hashWithSalt, 0, hash.Length);
-            Array.Copy(salt, 0, hashWithSalt, hash.Length, salt.Length);
-            
-            return Convert.ToBase64String(hashWithSalt);
+            return BCrypt.Net.BCrypt.HashPassword(password, 11);
         }
 
-        private bool VerifyPassword(string password, string storedHash)
+        private bool VerifyPassword(string inputPassword, string storedHash)
         {
-            var hashBytes = Convert.FromBase64String(storedHash);
-            
-            // Extract salt (last 64 bytes)
-            var salt = new byte[64];
-            Array.Copy(hashBytes, hashBytes.Length - 64, salt, 0, 64);
-            
-            // Compute hash with the same salt
-            using var hmac = new HMACSHA512(salt);
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            
-            // Compare computed hash with stored hash
-            for (int i = 0; i < computedHash.Length; i++)
+            try
             {
-                if (computedHash[i] != hashBytes[i])
+                _logger.LogInformation("Starting password verification");
+                
+                if (string.IsNullOrEmpty(storedHash) || !storedHash.StartsWith("$2a$"))
+                {
+                    _logger.LogWarning("Invalid BCrypt hash format in database");
                     return false;
+                }
+
+                var result = BCrypt.Net.BCrypt.Verify(inputPassword, storedHash);
+
+                if (!result)
+                {
+                    _logger.LogWarning("Password verification failed: Hash mismatch");
+                }
+                else
+                {
+                    _logger.LogInformation("Password verification successful");
+                }
+
+                return result;
             }
-            
-            return true;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during password verification");
+                return false;
+            }
         }
 
         private string GenerateJwtToken(User user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.UserName)
             };
-            
+
             // Add role claims
             foreach (var role in user.Roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role.RoleName));
             }
-            
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature),
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"]
-            };
-            
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["JWT:ExpirationInMinutes"])),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private string GenerateRefreshToken()
         {
-            var randomBytes = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+            }
+            return Convert.ToBase64String(randomNumber);
         }
         #endregion
     }

@@ -5,26 +5,28 @@ namespace HospitalAppointmentShedule.Services.DTOs
     public class ResultDto<T>
     {
         public bool IsSuccess { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public T? Data { get; set; }
+        public string Message { get; set; }
+        public T Data { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
 
-        public static ResultDto<T> Success(T data, string message = "")
+        public static ResultDto<T> Success(T data, string message = null)
         {
             return new ResultDto<T>
             {
                 IsSuccess = true,
                 Message = message,
-                Data = data
+                Data = data,
+                Errors = new List<string>()
             };
         }
 
-        public static ResultDto<T> Failure(string message, List<string>? errors = null)
+        public static ResultDto<T> Failure(string message, List<string> errors = null)
         {
             return new ResultDto<T>
             {
                 IsSuccess = false,
                 Message = message,
+                Data = default,
                 Errors = errors ?? new List<string>()
             };
         }

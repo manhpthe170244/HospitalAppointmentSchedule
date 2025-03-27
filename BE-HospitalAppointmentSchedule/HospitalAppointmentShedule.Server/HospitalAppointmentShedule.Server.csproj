@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\Admin\**" />
+    <Compile Remove="Controllers\User\**" />
+    <Content Remove="Controllers\Admin\**" />
+    <Content Remove="Controllers\User\**" />
+    <EmbeddedResource Remove="Controllers\Admin\**" />
+    <EmbeddedResource Remove="Controllers\User\**" />
+    <None Remove="Controllers\Admin\**" />
+    <None Remove="Controllers\User\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.11" />
@@ -22,11 +33,6 @@
     <ProjectReference Include="..\HospitalAppointmentShedule.Domain\HospitalAppointmentShedule.Domain.csproj" />
     <ProjectReference Include="..\HospitalAppointmentShedule.Infrastructure\HospitalAppointmentShedule.Infrastructure.csproj" />
     <ProjectReference Include="..\HospitalAppointmentShedule.Services\HospitalAppointmentShedule.Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\Admin\" />
-    <Folder Include="Controllers\User\" />
   </ItemGroup>
 
 </Project>
