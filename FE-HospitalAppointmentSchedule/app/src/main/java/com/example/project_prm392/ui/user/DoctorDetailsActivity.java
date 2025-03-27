@@ -20,7 +20,9 @@ import com.example.project_prm392.models.responses.BaseResponse;
 import com.example.project_prm392.models.responses.CertificationResponse;
 import com.example.project_prm392.models.responses.DoctorDetailsResponse;
 import com.example.project_prm392.models.responses.DoctorScheduleResponse;
+import com.example.project_prm392.models.responses.SpecialtyResponse;
 import com.example.project_prm392.network.ApiService;
+import com.example.project_prm392.repository.DoctorRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ import retrofit2.Response;
 public class DoctorDetailsActivity extends AppCompatActivity {
 
     @Inject
-    ApiService apiService;
+    DoctorRepository doctorRepository;
 
     private int doctorId;
     private ProgressBar progressBar;
@@ -63,8 +65,10 @@ public class DoctorDetailsActivity extends AppCompatActivity {
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Doctor Profile");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Doctor Profile");
+        }
 
         // Initialize views
         progressBar = findViewById(R.id.progressBar);
@@ -85,8 +89,12 @@ public class DoctorDetailsActivity extends AppCompatActivity {
         btnBookAppointment.setOnClickListener(v -> {
             Intent intent = new Intent(DoctorDetailsActivity.this, BookAppointmentActivity.class);
             intent.putExtra("doctorId", doctorId);
-            intent.putExtra("doctorName", doctorDetails.getUserName());
-            intent.putExtra("specialty", doctorDetails.getSpecialtyName());
+            if (doctorDetails != null) {
+                intent.putExtra("doctorName", doctorDetails.getUserName());
+                if (doctorDetails.getSpecialties() != null && !doctorDetails.getSpecialties().isEmpty()) {
+                    intent.putExtra("specialty", doctorDetails.getSpecialties().get(0).getSpecialtyName());
+                }
+            }
             startActivity(intent);
         });
 
@@ -97,7 +105,7 @@ public class DoctorDetailsActivity extends AppCompatActivity {
     private void loadDoctorDetails() {
         progressBar.setVisibility(View.VISIBLE);
 
-        apiService.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
+        doctorRepository.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
             @Override
             public void onResponse(Call<BaseResponse<DoctorDetailsResponse>> call, Response<BaseResponse<DoctorDetailsResponse>> response) {
                 progressBar.setVisibility(View.GONE);
@@ -122,34 +130,46 @@ public class DoctorDetailsActivity extends AppCompatActivity {
 
     private void displayDoctorDetails(DoctorDetailsResponse doctor) {
         tvDoctorName.setText(doctor.getUserName());
-        tvSpecialty.setText(doctor.getSpecialtyName());
+        
+        // Set specialty
+        if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
+            SpecialtyResponse specialty = doctor.getSpecialties().get(0);
+            tvSpecialty.setText(specialty.getSpecialtyName());
+        }
 
-        String description = doctor.getDoctorDescription();
+        // Set description
+        String description = doctor.getDescription();
         if (description != null && !description.isEmpty()) {
             tvDescription.setText(description);
+            findViewById(R.id.layoutDescription).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.layoutDescription).setVisibility(View.GONE);
         }
 
+        // Set work experience
         String workExperience = doctor.getWorkExperience();
         if (workExperience != null && !workExperience.isEmpty()) {
             tvWorkExperience.setText(workExperience);
+            findViewById(R.id.layoutWorkExperience).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.layoutWorkExperience).setVisibility(View.GONE);
         }
 
+        // Set training process
         String trainingProcess = doctor.getTrainingProcess();
         if (trainingProcess != null && !trainingProcess.isEmpty()) {
             tvTrainingProcess.setText(trainingProcess);
+            findViewById(R.id.layoutTrainingProcess).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.layoutTrainingProcess).setVisibility(View.GONE);
         }
 
-        // Load certifications
+        // Set certifications
         if (doctor.getCertifications() != null && !doctor.getCertifications().isEmpty()) {
             certificationsList.clear();
             certificationsList.addAll(doctor.getCertifications());
             certificationsAdapter.notifyDataSetChanged();
+            findViewById(R.id.layoutCertifications).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.layoutCertifications).setVisibility(View.GONE);
         }

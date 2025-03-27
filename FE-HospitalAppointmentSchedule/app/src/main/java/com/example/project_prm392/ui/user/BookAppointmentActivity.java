@@ -179,9 +179,12 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
         etReason = findViewById(R.id.etReason);
         btnConfirmAppointment = findViewById(R.id.btnConfirmAppointment);
         progressBar = findViewById(R.id.progressBar);
+        
+        // Initialize spinners
         spinnerService = findViewById(R.id.spinnerService);
         spinnerSchedule = findViewById(R.id.spinnerSchedule);
         btnBook = findViewById(R.id.btnBook);
+        etDate = findViewById(R.id.etDate);
     }
     
     private void setupToolbar() {
@@ -372,65 +375,54 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
     }
     
     private void bookAppointment() {
-        // Validate inputs
-        if (selectedServiceId == -1) {
-            Toast.makeText(this, "Please select a service", Toast.LENGTH_SHORT).show();
+        if (selectedServiceId == -1 || selectedScheduleId == -1 || etDate.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
-        
-        if (selectedScheduleId == -1) {
-            Toast.makeText(this, "Please select a time slot", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        if (etDate.getText().toString().isEmpty()) {
-            Toast.makeText(this, "Please select a date", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        String reason = etReason.getText().toString().trim();
-        if (reason.isEmpty()) {
-            Toast.makeText(this, "Please enter a reason for visit", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        // Create reservation request
-        ReservationCreateRequest request = new ReservationCreateRequest();
-        request.setPatientId(sessionManager.getUserId());
-        request.setReason(reason);
-        request.setAppointmentDate(dateFormat.format(selectedDate.getTime()));
-        request.setDoctorScheduleId(selectedScheduleId);
-        
-        // Show progress
+
         progressBar.setVisibility(View.VISIBLE);
-        btnBook.setEnabled(false);
         
-        // Make API call
-        apiService.createReservation(request).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, Response<BaseResponse<ReservationResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                btnBook.setEnabled(true);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(BookAppointmentActivity.this, "Appointment booked successfully", Toast.LENGTH_LONG).show();
-                    finish();
-                } else {
-                    String errorMessage = "Failed to book appointment";
-                    if (response.body() != null) {
-                        errorMessage = response.body().getMessage();
-                    }
-                    Toast.makeText(BookAppointmentActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                }
+        try {
+            Date selectedDate = dateFormat.parse(etDate.getText().toString().trim());
+            String reason = etReason.getText().toString().trim();
+            
+            if (reason.isEmpty()) {
+                reason = "General checkup";
             }
             
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                btnBook.setEnabled(true);
-                Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+            // Create reservation request with all required parameters including slotId
+            ReservationCreateRequest request = new ReservationCreateRequest(
+                selectedScheduleId,  // doctorScheduleId
+                sessionManager.getUserId(),  // patientId
+                selectedServiceId,  // serviceId
+                dateFormat.format(selectedDate),  // appointmentDate
+                reason,  // reason
+                0  // slotId - default to 0 if not used
+            );
+            
+            reservationRepository.createReservation(request).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
+                @Override
+                public void onResponse(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Response<BaseResponse<ReservationResponse>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        Toast.makeText(BookAppointmentActivity.this, "Appointment booked successfully", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(BookAppointmentActivity.this, "Failed to book appointment", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Throwable t) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(this, "Invalid date format", Toast.LENGTH_SHORT).show();
+        }
     }
     
     @Override

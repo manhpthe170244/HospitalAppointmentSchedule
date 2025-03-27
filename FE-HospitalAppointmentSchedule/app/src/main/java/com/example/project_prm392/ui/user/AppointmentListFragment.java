@@ -50,7 +50,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
     private ProgressBar progressBar;
     
     private AppointmentAdapter appointmentAdapter;
-    private List<ReservationResponse> appointmentsList = new ArrayList<>();
+    private final List<ReservationResponse> appointmentsList = new ArrayList<>();
     private String statusType;
     
     @Inject
@@ -108,7 +108,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
         
         reservationRepository.getReservationsByPatient(patientId).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
             @Override
-            public void onResponse(Call<BaseResponse<List<ReservationResponse>>> call, Response<BaseResponse<List<ReservationResponse>>> response) {
+            public void onResponse(@NonNull Call<BaseResponse<List<ReservationResponse>>> call, @NonNull Response<BaseResponse<List<ReservationResponse>>> response) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
                 
@@ -158,7 +158,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
             }
             
             @Override
-            public void onFailure(Call<BaseResponse<List<ReservationResponse>>> call, Throwable t) {
+            public void onFailure(@NonNull Call<BaseResponse<List<ReservationResponse>>> call, @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
                 tvNoAppointments.setVisibility(View.VISIBLE);
@@ -204,7 +204,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
         
         reservationRepository.cancelReservation(reservationId, reason).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, Response<BaseResponse<ReservationResponse>> response) {
+            public void onResponse(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Response<BaseResponse<ReservationResponse>> response) {
                 progressBar.setVisibility(View.GONE);
                 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -216,7 +216,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
             }
             
             @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
+            public void onFailure(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }

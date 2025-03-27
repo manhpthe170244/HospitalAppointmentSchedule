@@ -40,13 +40,14 @@ public class ViewDoctorsActivity extends AppCompatActivity implements DoctorsAda
     @Inject
     ApiService apiService;
 
+    private final List<DoctorResponse> doctorsList = new ArrayList<>();
+    private final List<SpecialtyResponse> specialtiesList = new ArrayList<>();
+    
     private RecyclerView recyclerViewDoctors;
     private SwipeRefreshLayout swipeRefresh;
     private DoctorsAdapter doctorsAdapter;
-    private List<DoctorResponse> doctorsList = new ArrayList<>();
     private EditText etSearch;
     private Spinner specialtySpinner;
-    private List<SpecialtyResponse> specialtiesList = new ArrayList<>();
     private int selectedSpecialtyId = -1;
 
     @Override

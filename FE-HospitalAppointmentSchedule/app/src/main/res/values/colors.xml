@@ -14,4 +14,7 @@
     <color name="statusApproved">#4CAF50</color>
     <color name="statusCompleted">#2196F3</color>
     <color name="statusCancelled">#F44336</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorAccent">#03A9F4</color>
 </resources>

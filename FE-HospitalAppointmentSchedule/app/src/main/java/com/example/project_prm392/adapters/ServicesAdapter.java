@@ -10,23 +10,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project_prm392.R;
 import com.example.project_prm392.models.responses.ServiceResponse;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.ServiceViewHolder> {
     
-    private List<ServiceResponse> servicesList;
+    private final List<ServiceResponse> servicesList;
     private List<ServiceResponse> filteredList;
-    private OnServiceClickListener listener;
+    private final OnServiceClickListener listener;
     
     public interface OnServiceClickListener {
-        void onServiceClick(ServiceResponse service);
-    }
-    
-    public ServicesAdapter(List<ServiceResponse> servicesList) {
-        this.servicesList = servicesList;
-        this.filteredList = new ArrayList<>(servicesList);
+        void onServiceClick(int serviceId);
     }
     
     public ServicesAdapter(List<ServiceResponse> servicesList, OnServiceClickListener listener) {
@@ -36,14 +32,15 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
     }
     
     public void setFilteredList(List<ServiceResponse> filteredList) {
-        this.filteredList = filteredList;
+        this.filteredList = new ArrayList<>(filteredList);
         notifyDataSetChanged();
     }
     
     @NonNull
     @Override
     public ServiceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_service, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_service, parent, false);
         return new ServiceViewHolder(view);
     }
     
@@ -62,45 +59,30 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
         
         private final TextView tvServiceName;
         private final TextView tvSpecialty;
+        private final TextView tvDescription;
         private final TextView tvPrice;
-        private final TextView tvOverview;
+        private final MaterialButton btnDetails;
         
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
             tvServiceName = itemView.findViewById(R.id.tvServiceName);
             tvSpecialty = itemView.findViewById(R.id.tvSpecialty);
+            tvDescription = itemView.findViewById(R.id.tvDescription);
             tvPrice = itemView.findViewById(R.id.tvPrice);
-            tvOverview = itemView.findViewById(R.id.tvOverview);
-            
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onServiceClick(filteredList.get(position));
-                }
-            });
+            btnDetails = itemView.findViewById(R.id.btnDetails);
         }
         
         public void bind(ServiceResponse service) {
             tvServiceName.setText(service.getServiceName());
-            
-            if (service.getSpecialtyName() != null && !service.getSpecialtyName().isEmpty()) {
-                tvSpecialty.setText(service.getSpecialtyName());
-                tvSpecialty.setVisibility(View.VISIBLE);
-            } else {
-                tvSpecialty.setVisibility(View.GONE);
-            }
-            
+            tvSpecialty.setText(service.getSpecialtyName());
+            tvDescription.setText(service.getDescription());
             tvPrice.setText(String.format("$%.2f", service.getPrice()));
             
-            if (service.getOverview() != null && !service.getOverview().isEmpty()) {
-                tvOverview.setText(service.getOverview());
-                tvOverview.setVisibility(View.VISIBLE);
-            } else if (service.getDescription() != null && !service.getDescription().isEmpty()) {
-                tvOverview.setText(service.getDescription());
-                tvOverview.setVisibility(View.VISIBLE);
-            } else {
-                tvOverview.setVisibility(View.GONE);
-            }
+            btnDetails.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onServiceClick(service.getServiceId());
+                }
+            });
         }
     }
 } 
