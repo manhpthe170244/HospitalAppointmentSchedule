@@ -37,25 +37,43 @@ public class CertificationsAdapter extends RecyclerView.Adapter<CertificationsAd
 
     @Override
     public int getItemCount() {
-        return certifications.size();
+        return certifications != null ? certifications.size() : 0;
     }
 
-    static class CertificationViewHolder extends RecyclerView.ViewHolder {
+    public static class CertificationViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvCertificationName;
-        private final TextView tvCertificationDate;
-        private final TextView tvCertificationIssuer;
+        private final TextView tvCertificationUrl;
+        private final TextView tvDescription;
 
         public CertificationViewHolder(@NonNull View itemView) {
             super(itemView);
             tvCertificationName = itemView.findViewById(R.id.tvCertificationName);
-            tvCertificationDate = itemView.findViewById(R.id.tvCertificationDate);
-            tvCertificationIssuer = itemView.findViewById(R.id.tvCertificationIssuer);
+            tvCertificationUrl = itemView.findViewById(R.id.tvCertificationUrl);
+            tvDescription = itemView.findViewById(R.id.tvDescription);
         }
 
         public void bind(CertificationResponse certification) {
-            tvCertificationName.setText(certification.getCertificationName());
-            tvCertificationDate.setText(certification.getIssueDate());
-            tvCertificationIssuer.setText(certification.getIssuer());
+            // Use certification URL as name if available, otherwise show "Certification #ID"
+            String name = certification.getCertificationUrl() != null && !certification.getCertificationUrl().isEmpty()
+                    ? certification.getCertificationUrl()
+                    : "Certification #" + certification.getCertificationId();
+            tvCertificationName.setText(name);
+            
+            // Show URL if available
+            if (certification.getCertificationUrl() != null && !certification.getCertificationUrl().isEmpty()) {
+                tvCertificationUrl.setVisibility(View.VISIBLE);
+                tvCertificationUrl.setText(certification.getCertificationUrl());
+            } else {
+                tvCertificationUrl.setVisibility(View.GONE);
+            }
+            
+            // Show description if available
+            if (certification.getDescription() != null && !certification.getDescription().isEmpty()) {
+                tvDescription.setVisibility(View.VISIBLE);
+                tvDescription.setText(certification.getDescription());
+            } else {
+                tvDescription.setVisibility(View.GONE);
+            }
         }
     }
 } 

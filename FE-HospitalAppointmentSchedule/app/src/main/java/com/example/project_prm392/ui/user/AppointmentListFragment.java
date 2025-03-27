@@ -26,6 +26,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -71,7 +72,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            statusType = getArguments().getString(ARG_STATUS_TYPE);
+            statusType = getArguments().getString(ARG_STATUS_TYPE, TYPE_UPCOMING);
         }
     }
     
@@ -118,25 +119,22 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
                     // Filter appointments based on status type
                     List<ReservationResponse> filteredAppointments = new ArrayList<>();
                     
-                    switch (statusType) {
-                        case TYPE_UPCOMING:
-                            filteredAppointments = allAppointments.stream()
-                                .filter(appointment -> 
-                                    appointment.getStatus().equalsIgnoreCase("confirmed") || 
-                                    appointment.getStatus().equalsIgnoreCase("approved") || 
-                                    appointment.getStatus().equalsIgnoreCase("pending"))
-                                .collect(Collectors.toList());
-                            break;
-                        case TYPE_PAST:
-                            filteredAppointments = allAppointments.stream()
-                                .filter(appointment -> appointment.getStatus().equalsIgnoreCase("completed"))
-                                .collect(Collectors.toList());
-                            break;
-                        case TYPE_CANCELLED:
-                            filteredAppointments = allAppointments.stream()
-                                .filter(appointment -> appointment.getStatus().equalsIgnoreCase("cancelled"))
-                                .collect(Collectors.toList());
-                            break;
+                    if (allAppointments != null) {
+                        filteredAppointments = switch (statusType) {
+                            case TYPE_UPCOMING -> allAppointments.stream()
+                                    .filter(appointment -> 
+                                        "confirmed".equalsIgnoreCase(appointment.getStatus()) || 
+                                        "approved".equalsIgnoreCase(appointment.getStatus()) || 
+                                        "pending".equalsIgnoreCase(appointment.getStatus()))
+                                    .collect(Collectors.toList());
+                            case TYPE_PAST -> allAppointments.stream()
+                                    .filter(appointment -> "completed".equalsIgnoreCase(appointment.getStatus()))
+                                    .collect(Collectors.toList());
+                            case TYPE_CANCELLED -> allAppointments.stream()
+                                    .filter(appointment -> "cancelled".equalsIgnoreCase(appointment.getStatus()))
+                                    .collect(Collectors.toList());
+                            default -> new ArrayList<>();
+                        };
                     }
                     
                     appointmentsList.clear();
@@ -172,7 +170,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
     public void onRescheduleClick(int position) {
         // Navigate to reschedule screen
         ReservationResponse appointment = appointmentsList.get(position);
-        // Will be implemented in the corresponding activity
+        // TODO: Implement navigation to reschedule screen
     }
     
     @Override
@@ -188,7 +186,7 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
             .setMessage("Are you sure you want to cancel this appointment?")
             .setView(dialogView)
             .setPositiveButton("Confirm", (dialog, which) -> {
-                String reason = etCancelReason.getText().toString().trim();
+                String reason = Objects.requireNonNull(etCancelReason.getText()).toString().trim();
                 if (reason.isEmpty()) {
                     reason = "Cancelled by patient";
                 }
@@ -226,7 +224,6 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
     @Override
     public void onItemClick(int position) {
         ReservationResponse appointment = appointmentsList.get(position);
-        // Navigate to appointment details
-        // Will be implemented in the corresponding activity
+        // TODO: Implement navigation to appointment details
     }
 } 

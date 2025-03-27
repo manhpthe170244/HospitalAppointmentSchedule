@@ -4,26 +4,23 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project_prm392.R;
+import com.example.project_prm392.adapters.CertificationsAdapter;
+import com.example.project_prm392.adapters.SchedulesAdapter;
 import com.example.project_prm392.adapters.ServicesAdapter;
-import com.example.project_prm392.adapters.SpecialtiesAdapter;
 import com.example.project_prm392.models.responses.BaseResponse;
 import com.example.project_prm392.models.responses.DoctorDetailsResponse;
-import com.example.project_prm392.models.responses.ServiceResponse;
-import com.example.project_prm392.network.ApiService;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.project_prm392.repository.DoctorRepository;
 
 import javax.inject.Inject;
 
@@ -36,32 +33,24 @@ import retrofit2.Response;
 public class DoctorDetailActivity extends AppCompatActivity implements ServicesAdapter.OnServiceClickListener {
 
     @Inject
-    ApiService apiService;
-
-    private Toolbar toolbar;
-    private ImageView imgDoctor;
-    private TextView tvDoctorName;
-    private TextView tvDoctorTitle;
-    private TextView tvSpecialties;
-    private TextView tvDoctorDescription;
-    private TextView tvDoctorWorkplace;
-    private RecyclerView recyclerViewSpecialties;
-    private RecyclerView recyclerViewServices;
-    private RecyclerView recyclerViewSchedules;
-    private Button btnBookAppointment;
-    private ProgressBar progressBar;
+    DoctorRepository doctorRepository;
 
     private int doctorId;
-    private DoctorDetailsResponse doctorDetails;
-    private List<ServiceResponse> servicesList = new ArrayList<>();
-    private ServicesAdapter servicesAdapter;
+    private ProgressBar progressBar;
+    private TextView tvDoctorName;
+    private TextView tvSpecialty;
+    private TextView tvExperience;
+    private TextView tvDescription;
+    private RecyclerView recyclerViewServices;
+    private RecyclerView recyclerViewSchedules;
+    private RecyclerView recyclerViewCertifications;
+    private Button btnBookAppointment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_doctor_detail);
 
-        // Get doctor ID from intent
         doctorId = getIntent().getIntExtra("doctorId", -1);
         if (doctorId == -1) {
             Toast.makeText(this, "Invalid doctor ID", Toast.LENGTH_SHORT).show();
@@ -75,30 +64,25 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar);
-        imgDoctor = findViewById(R.id.imgDoctorHeader);
-        tvDoctorName = findViewById(R.id.tvDoctorTitle);
-        tvDoctorTitle = findViewById(R.id.tvDoctorTitle);
-        tvSpecialties = findViewById(R.id.tvSpecialties);
-        tvDoctorDescription = findViewById(R.id.tvDoctorDescription);
-        tvDoctorWorkplace = findViewById(R.id.tvWorkplace);
-        recyclerViewSpecialties = findViewById(R.id.recyclerViewSpecialties);
+        progressBar = findViewById(R.id.progressBar);
+        tvDoctorName = findViewById(R.id.tvDoctorName);
+        tvSpecialty = findViewById(R.id.tvSpecialty);
+        tvExperience = findViewById(R.id.tvExperience);
+        tvDescription = findViewById(R.id.tvDescription);
         recyclerViewServices = findViewById(R.id.recyclerViewServices);
         recyclerViewSchedules = findViewById(R.id.recyclerViewSchedules);
+        recyclerViewCertifications = findViewById(R.id.recyclerViewCertifications);
         btnBookAppointment = findViewById(R.id.btnBookAppointment);
-        progressBar = findViewById(R.id.progressBar);
 
-        btnBookAppointment.setOnClickListener(v -> {
-            Intent intent = new Intent(DoctorDetailActivity.this, BookAppointmentActivity.class);
-            intent.putExtra("doctorId", doctorId);
-            intent.putExtra("doctorName", doctorDetails != null ? doctorDetails.getUserName() : "");
-            intent.putExtra("specialty", doctorDetails != null && !doctorDetails.getSpecialties().isEmpty() 
-                    ? doctorDetails.getSpecialties().get(0).getSpecialtyName() : "");
-            startActivity(intent);
-        });
+        recyclerViewServices.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewSchedules.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewCertifications.setLayoutManager(new LinearLayoutManager(this));
+
+        btnBookAppointment.setOnClickListener(v -> navigateToBookAppointment());
     }
 
     private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -109,96 +93,64 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
     private void loadDoctorDetails() {
         progressBar.setVisibility(View.VISIBLE);
 
-        apiService.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
+        doctorRepository.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<DoctorDetailsResponse>> call, Response<BaseResponse<DoctorDetailsResponse>> response) {
+            public void onResponse(@NonNull Call<BaseResponse<DoctorDetailsResponse>> call, @NonNull Response<BaseResponse<DoctorDetailsResponse>> response) {
                 progressBar.setVisibility(View.GONE);
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    doctorDetails = response.body().getData();
-                    displayDoctorDetails();
-                    setupRecyclerViews();
+                    DoctorDetailsResponse doctor = response.body().getData();
+                    displayDoctorDetails(doctor);
                 } else {
                     Toast.makeText(DoctorDetailActivity.this, "Failed to load doctor details", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<DoctorDetailsResponse>> call, Throwable t) {
+            public void onFailure(@NonNull Call<BaseResponse<DoctorDetailsResponse>> call, @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Toast.makeText(DoctorDetailActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void displayDoctorDetails() {
-        if (doctorDetails == null) return;
-
-        // Set doctor name as activity title
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(doctorDetails.getUserName());
+    private void displayDoctorDetails(DoctorDetailsResponse doctor) {
+        tvDoctorName.setText(doctor.getUserName());
+        if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
+            tvSpecialty.setText(doctor.getSpecialties().get(0).getSpecialtyName());
         }
+        tvExperience.setText(String.format("%d years of experience", doctor.getExperience()));
+        tvDescription.setText(doctor.getDoctorDescription());
 
-        // Set doctor title/academic title
-        if (doctorDetails.getAcademicTitle() != null && !doctorDetails.getAcademicTitle().isEmpty()) {
-            tvDoctorTitle.setText(doctorDetails.getAcademicTitle());
-            tvDoctorTitle.setVisibility(View.VISIBLE);
-        } else {
-            tvDoctorTitle.setVisibility(View.GONE);
-        }
+        // Set up services adapter
+        ServicesAdapter servicesAdapter = new ServicesAdapter(doctor.getServices(), this);
+        recyclerViewServices.setAdapter(servicesAdapter);
 
-        // Set specialties
-        StringBuilder specialtiesText = new StringBuilder();
-        if (doctorDetails.getSpecialties() != null && !doctorDetails.getSpecialties().isEmpty()) {
-            for (int i = 0; i < doctorDetails.getSpecialties().size(); i++) {
-                specialtiesText.append(doctorDetails.getSpecialties().get(i).getSpecialtyName());
-                if (i < doctorDetails.getSpecialties().size() - 1) {
-                    specialtiesText.append(", ");
-                }
-            }
-            tvSpecialties.setText(specialtiesText.toString());
-        } else {
-            tvSpecialties.setText("No specialties listed");
-        }
+        // Set up schedules adapter
+        SchedulesAdapter schedulesAdapter = new SchedulesAdapter(doctor.getSchedules());
+        recyclerViewSchedules.setAdapter(schedulesAdapter);
 
-        // Set workplace
-        if (doctorDetails.getCurrentWork() != null && !doctorDetails.getCurrentWork().isEmpty()) {
-            tvDoctorWorkplace.setText(doctorDetails.getCurrentWork());
-        } else {
-            tvDoctorWorkplace.setText("Information not available");
-        }
-
-        // Set description
-        if (doctorDetails.getDoctorDescription() != null && !doctorDetails.getDoctorDescription().isEmpty()) {
-            tvDoctorDescription.setText(doctorDetails.getDoctorDescription());
-            tvDoctorDescription.setVisibility(View.VISIBLE);
-        } else {
-            tvDoctorDescription.setVisibility(View.GONE);
-        }
-
-        // Set doctor image
-        imgDoctor.setImageResource(R.drawable.ic_doctor_avatar);
+        // Set up certifications adapter
+        CertificationsAdapter certificationsAdapter = new CertificationsAdapter(doctor.getCertifications());
+        recyclerViewCertifications.setAdapter(certificationsAdapter);
     }
 
-    private void setupRecyclerViews() {
-        // Setup services recycler view
-        if (doctorDetails.getServices() != null && !doctorDetails.getServices().isEmpty()) {
-            servicesList.clear();
-            servicesList.addAll(doctorDetails.getServices());
-            
-            recyclerViewServices.setLayoutManager(new LinearLayoutManager(this));
-            servicesAdapter = new ServicesAdapter(servicesList, this);
-            recyclerViewServices.setAdapter(servicesAdapter);
-            recyclerViewServices.setVisibility(View.VISIBLE);
-        } else {
-            recyclerViewServices.setVisibility(View.GONE);
-        }
+    private void navigateToBookAppointment() {
+        Intent intent = new Intent(this, BookAppointmentActivity.class);
+        intent.putExtra("doctorId", doctorId);
+        intent.putExtra("doctorName", tvDoctorName.getText().toString());
+        intent.putExtra("specialty", tvSpecialty.getText().toString());
+        startActivity(intent);
     }
 
     @Override
-    public void onServiceClick(ServiceResponse service) {
-        Intent intent = new Intent(this, ServiceDetailActivity.class);
-        intent.putExtra("serviceId", service.getServiceId());
+    public void onServiceClick(int serviceId) {
+        // Handle service click - maybe show service details or pre-select service in booking
+        Intent intent = new Intent(this, BookAppointmentActivity.class);
+        intent.putExtra("doctorId", doctorId);
+        intent.putExtra("serviceId", serviceId);
+        intent.putExtra("doctorName", tvDoctorName.getText().toString());
+        intent.putExtra("specialty", tvSpecialty.getText().toString());
         startActivity(intent);
     }
 
