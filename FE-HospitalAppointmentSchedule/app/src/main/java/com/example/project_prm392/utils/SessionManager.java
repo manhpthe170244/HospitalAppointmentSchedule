@@ -14,7 +14,7 @@ public class SessionManager {
     private final SharedPreferences.Editor editor;
     private static SessionManager instance;
 
-    private SessionManager(Context context) {
+    public SessionManager(Context context) {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         editor = prefs.edit();
     }
@@ -69,5 +69,15 @@ public class SessionManager {
 
     public boolean isLoggedIn() {
         return getAuthToken() != null;
+    }
+
+    public boolean isAdmin() {
+    }
+
+    public String getRole() {
+    }
+
+    public String getEmail() {
+        return null;
     }
 } 

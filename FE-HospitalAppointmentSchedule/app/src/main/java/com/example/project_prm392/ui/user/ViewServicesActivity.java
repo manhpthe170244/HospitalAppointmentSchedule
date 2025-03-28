@@ -104,7 +104,7 @@ public class ViewServicesActivity extends AppCompatActivity implements ServicesA
                     selectedSpecialtyId = -1;
                     loadServices();
                 } else {
-                    selectedSpecialtyId = specialtiesList.get(position - 1).getSpecialtyId();
+                    selectedSpecialtyId = specialtiesList.get(position - 1).getId();
                     loadServicesBySpecialty(selectedSpecialtyId);
                 }
             }
@@ -129,7 +129,7 @@ public class ViewServicesActivity extends AppCompatActivity implements ServicesA
                     List<String> specialtyNames = new ArrayList<>();
                     specialtyNames.add("All Specialties");
                     for (SpecialtyResponse specialty : specialtiesList) {
-                        specialtyNames.add(specialty.getSpecialtyName());
+                        specialtyNames.add(specialty.getName());
                     }
 
                     ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -224,7 +224,7 @@ public class ViewServicesActivity extends AppCompatActivity implements ServicesA
         
         List<ServiceResponse> filteredList = new ArrayList<>();
         for (ServiceResponse service : servicesList) {
-            if (service.getServiceName().toLowerCase().contains(searchTerm) || 
+            if (service.getName().toLowerCase().contains(searchTerm) || 
                 (service.getDescription() != null && service.getDescription().toLowerCase().contains(searchTerm))) {
                 filteredList.add(service);
             }

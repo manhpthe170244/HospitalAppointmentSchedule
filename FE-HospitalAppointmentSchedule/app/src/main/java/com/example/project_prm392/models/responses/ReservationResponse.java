@@ -17,6 +17,7 @@ public class ReservationResponse {
     private String notes;
     private Date createdAt;
     private Date updatedAt;
+    private String reason;
 
     public ReservationResponse() {
     }
@@ -140,5 +141,17 @@ public class ReservationResponse {
 
     public String getFormattedTime() {
         return timeSlot;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public int getReservationId() {
+        return id;
     }
 } 

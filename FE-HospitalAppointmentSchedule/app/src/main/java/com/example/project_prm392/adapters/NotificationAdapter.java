@@ -90,7 +90,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             messageTextView.setText(notification.getMessage());
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-            timeTextView.setText(sdf.format(new Date(notification.getCreatedAt())));
+            timeTextView.setText(sdf.format(notification.getCreatedAt()));
 
             // Set icon based on notification type
             switch (notification.getType()) {

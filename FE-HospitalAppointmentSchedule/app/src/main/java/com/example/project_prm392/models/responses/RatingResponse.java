@@ -11,6 +11,7 @@ public class RatingResponse {
     private int reservationId;
     private Date createdAt;
     private Date updatedAt;
+    private String patientName;
 
     public RatingResponse(int id, int doctorId, int userId, int rating,
                          String comment, int reservationId, Date createdAt, Date updatedAt) {
@@ -48,4 +49,7 @@ public class RatingResponse {
     
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+    
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String patientName) { this.patientName = patientName; }
 } 

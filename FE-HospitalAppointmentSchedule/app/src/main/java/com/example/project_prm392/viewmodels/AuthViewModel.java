@@ -51,7 +51,7 @@ public class AuthViewModel extends ViewModel {
         return sessionManager.getEmail();
     }
 
-    public String getUserId() {
+    public int getUserId() {
         return sessionManager.getUserId();
     }
 } 

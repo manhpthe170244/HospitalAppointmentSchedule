@@ -159,16 +159,9 @@ public class ServiceDetailActivity extends AppCompatActivity implements DoctorsA
     }
 
     private void displayServiceDetails(ServiceResponse service) {
-        tvServiceName.setText(service.getServiceName());
+        tvServiceName.setText(service.getName());
         tvSpecialty.setText(service.getSpecialtyName());
         tvPrice.setText(String.format("$%.2f", service.getPrice()));
-        
-        if (service.getOverview() != null && !service.getOverview().isEmpty()) {
-            tvOverview.setText(service.getOverview());
-            tvOverview.setVisibility(View.VISIBLE);
-        } else {
-            tvOverview.setVisibility(View.GONE);
-        }
         
         // Set default service image
         imgDoctor.setImageResource(R.drawable.ic_service);

@@ -80,7 +80,7 @@ public class MedicalRecordAdapter extends RecyclerView.Adapter<MedicalRecordAdap
             prescriptionTextView.setText(medicalRecord.getPrescription());
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            dateTextView.setText(sdf.format(new Date(medicalRecord.getCreatedAt())));
+            dateTextView.setText(sdf.format(medicalRecord.getCreatedAt()));
         }
     }
 } 

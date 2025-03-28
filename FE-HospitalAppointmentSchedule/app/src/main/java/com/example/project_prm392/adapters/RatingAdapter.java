@@ -65,7 +65,7 @@ public class RatingAdapter extends RecyclerView.Adapter<RatingAdapter.RatingView
             commentTextView.setText(rating.getComment());
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            dateTextView.setText(sdf.format(new Date(rating.getCreatedAt())));
+            dateTextView.setText(sdf.format(rating.getCreatedAt()));
         }
     }
 } 

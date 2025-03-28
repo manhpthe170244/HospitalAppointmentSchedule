@@ -249,4 +249,8 @@ public class DoctorResponse {
     public void setTotalRatings(int totalRatings) {
         this.totalRatings = totalRatings;
     }
+
+    public String getDoctorName() {
+        return userName != null ? userName : name;
+    }
 } 

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project_prm392.R;
-import com.example.project_prm392.adapters.DoctorAdapter;
+import com.example.project_prm392.adapters.DoctorsAdapter;
 import com.example.project_prm392.models.responses.BaseResponse;
 import com.example.project_prm392.models.responses.DoctorResponse;
 import com.example.project_prm392.network.ApiService;
@@ -29,7 +29,7 @@ public class SearchActivity extends AppCompatActivity {
     private EditText searchEditText;
     private Spinner specialtySpinner;
     private RecyclerView recyclerView;
-    private DoctorAdapter adapter;
+    private DoctorsAdapter adapter;
     private List<DoctorResponse> doctors;
     private ApiService apiService;
 
@@ -44,11 +44,11 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.searchRecyclerView);
 
         // Initialize data
-        apiService = RetrofitClient.getInstance().create(ApiService.class);
+        apiService = RetrofitClient.getInstance().getApi();
         doctors = new ArrayList<>();
 
         // Setup RecyclerView
-        adapter = new DoctorAdapter(doctors, this::onDoctorClick);
+        adapter = new DoctorsAdapter(doctors, this::onDoctorClick);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 

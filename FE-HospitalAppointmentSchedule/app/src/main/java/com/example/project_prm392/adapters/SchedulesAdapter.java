@@ -70,7 +70,7 @@ public class SchedulesAdapter extends RecyclerView.Adapter<SchedulesAdapter.Sche
         
         public void bind(DoctorScheduleResponse schedule) {
             tvDayOfWeek.setText(schedule.getDayOfWeek());
-            String timeSlot = String.format("%s - %s", schedule.getStartTime(), schedule.getEndTime());
+            String timeSlot = String.format(schedule.getSlotTime());
             tvSlotTime.setText(timeSlot);
             tvRoomName.setText(schedule.getRoomName());
             

@@ -13,6 +13,7 @@ public class MedicalRecordResponse {
     private String notes;
     private Date createdAt;
     private Date updatedAt;
+    private String doctorName;
 
     public MedicalRecordResponse(int id, int userId, int doctorId, int reservationId,
                                 String diagnosis, String treatment, String prescription,
@@ -59,4 +60,7 @@ public class MedicalRecordResponse {
     
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+    
+    public String getDoctorName() { return doctorName; }
+    public void setDoctorName(String doctorName) { this.doctorName = doctorName; }
 } 

@@ -102,7 +102,7 @@ public class ViewDoctorsActivity extends AppCompatActivity implements DoctorsAda
                     selectedSpecialtyId = -1;
                     loadDoctors();
                 } else {
-                    selectedSpecialtyId = specialtiesList.get(position - 1).getSpecialtyId();
+                    selectedSpecialtyId = specialtiesList.get(position - 1).getId();
                     loadDoctorsBySpecialty(selectedSpecialtyId);
                 }
             }
@@ -127,7 +127,7 @@ public class ViewDoctorsActivity extends AppCompatActivity implements DoctorsAda
                     List<String> specialtyNames = new ArrayList<>();
                     specialtyNames.add("All Specialties");
                     for (SpecialtyResponse specialty : specialtiesList) {
-                        specialtyNames.add(specialty.getSpecialtyName());
+                        specialtyNames.add(specialty.getName());
                     }
 
                     ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(

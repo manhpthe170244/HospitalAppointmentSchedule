@@ -44,7 +44,7 @@ public class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.PaymentV
         notifyDataSetChanged();
     }
 
-    static class PaymentViewHolder extends RecyclerView.ViewHolder {
+    public class PaymentViewHolder extends RecyclerView.ViewHolder {
         private TextView amountTextView;
         private TextView statusTextView;
         private TextView methodTextView;
@@ -67,7 +67,7 @@ public class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.PaymentV
             transactionIdTextView.setText(payment.getTransactionId());
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-            dateTextView.setText(sdf.format(new Date(payment.getCreatedAt())));
+            dateTextView.setText(sdf.format(payment.getCreatedAt()));
 
             // Set status color
             switch (payment.getStatus().toUpperCase()) {

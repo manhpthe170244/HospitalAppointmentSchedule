@@ -65,14 +65,14 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.DoctorVi
         private final ImageView imgDoctor;
         private final TextView tvDoctorName;
         private final TextView tvSpecialty;
-        private final TextView tvDegree;
+        private final TextView tvExperience;
         
         public DoctorViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgDoctor = itemView.findViewById(R.id.imgDoctor);
-            tvDoctorName = itemView.findViewById(R.id.tvDoctorName);
-            tvSpecialty = itemView.findViewById(R.id.tvSpecialty);
-            tvDegree = itemView.findViewById(R.id.tvDegree);
+            imgDoctor = itemView.findViewById(R.id.doctorImage);
+            tvDoctorName = itemView.findViewById(R.id.doctorName);
+            tvSpecialty = itemView.findViewById(R.id.specialization);
+            tvExperience = itemView.findViewById(R.id.experience);
             
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -84,8 +84,8 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.DoctorVi
         
         public void bind(DoctorResponse doctor) {
             tvDoctorName.setText(doctor.getDoctorName());
-            tvSpecialty.setText(doctor.getSpecialtyName());
-            tvDegree.setText(doctor.getDegree());
+            tvSpecialty.setText(doctor.getSpecialtyName() != null ? doctor.getSpecialtyName() : doctor.getSpecialization());
+            tvExperience.setText(doctor.getDegree() != null ? doctor.getDegree() : doctor.getExperience());
             
             // Set default doctor avatar if no image URL is provided
             if (doctor.getImageUrl() != null && !doctor.getImageUrl().isEmpty()) {

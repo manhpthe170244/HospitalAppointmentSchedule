@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.project_prm392.R;
 import com.example.project_prm392.databinding.ActivityLoginBinding;
 import com.example.project_prm392.ui.admin.AdminDashboardActivity;
-import com.example.project_prm392.ui.user.MainActivity;
+import com.example.project_prm392.MainActivity;
 import com.example.project_prm392.utils.ValidationUtils;
 import com.example.project_prm392.viewmodels.AuthViewModel;
 

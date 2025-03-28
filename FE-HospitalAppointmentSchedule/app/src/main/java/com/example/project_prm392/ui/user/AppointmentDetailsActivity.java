@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import com.example.project_prm392.R;
 import com.example.project_prm392.models.responses.BaseResponse;
 import com.example.project_prm392.models.responses.ReservationDetailsResponse;
+import com.example.project_prm392.models.responses.ReservationResponse;
 import com.example.project_prm392.network.ApiService;
 import com.example.project_prm392.utils.Constants;
 
@@ -186,13 +187,13 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     private void cancelAppointment(String reason) {
         progressBar.setVisibility(View.VISIBLE);
         btnCancel.setEnabled(false);
-        
-        apiService.cancelReservation(reservationId, reason).enqueue(new Callback<BaseResponse<Boolean>>() {
+
+        apiService.cancelReservation(reservationId, reason).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<Boolean>> call, Response<BaseResponse<Boolean>> response) {
+            public void onResponse(Call<BaseResponse<ReservationResponse>> call, Response<BaseResponse<ReservationResponse>> response) {
                 progressBar.setVisibility(View.GONE);
                 btnCancel.setEnabled(true);
-                
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(AppointmentDetailsActivity.this, "Appointment cancelled successfully", Toast.LENGTH_LONG).show();
                     // Reload details to show updated status
@@ -205,9 +206,9 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                     Toast.makeText(AppointmentDetailsActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
-            
+
             @Override
-            public void onFailure(Call<BaseResponse<Boolean>> call, Throwable t) {
+            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnCancel.setEnabled(true);
                 Toast.makeText(AppointmentDetailsActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();

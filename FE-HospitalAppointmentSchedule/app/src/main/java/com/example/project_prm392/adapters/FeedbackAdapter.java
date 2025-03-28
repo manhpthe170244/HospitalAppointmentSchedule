@@ -68,7 +68,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
             serviceNameTextView.setText(feedback.getServiceName());
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            dateTextView.setText(sdf.format(new Date(feedback.getCreatedAt())));
+            dateTextView.setText(sdf.format(feedback.getCreatedAt()));
         }
     }
 } 

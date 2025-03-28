@@ -77,10 +77,10 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
         }
 
         void bind(SlotResponse timeSlot, int position) {
-            tvTimeSlot.setText(timeSlot.getSlotTime());
+            tvTimeSlot.setText(timeSlot.getStartTime() + "-" + timeSlot.getEndTime());
             cardView.setChecked(position == selectedPosition);
-            cardView.setEnabled(!timeSlot.isBooked());
-            cardView.setAlpha(timeSlot.isBooked() ? 0.5f : 1.0f);
+            cardView.setEnabled(timeSlot.isAvailable());
+            cardView.setAlpha(timeSlot.isAvailable() ? 1f : 0.5f);
         }
     }
 } 

@@ -3,6 +3,7 @@ package com.example.project_prm392.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -61,7 +62,7 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
         private final TextView tvSpecialty;
         private final TextView tvDescription;
         private final TextView tvPrice;
-        private final MaterialButton btnDetails;
+        private final Button btnDetails;
         
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -73,14 +74,14 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
         }
         
         public void bind(ServiceResponse service) {
-            tvServiceName.setText(service.getServiceName());
+            tvServiceName.setText(service.getName());
             tvSpecialty.setText(service.getSpecialtyName());
             tvDescription.setText(service.getDescription());
             tvPrice.setText(String.format("$%.2f", service.getPrice()));
             
             btnDetails.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onServiceClick(service.getServiceId());
+                    listener.onServiceClick(service.getId());
                 }
             });
         }

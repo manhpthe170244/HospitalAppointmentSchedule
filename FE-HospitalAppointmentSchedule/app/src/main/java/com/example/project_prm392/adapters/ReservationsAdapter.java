@@ -94,14 +94,21 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             
             // Format date and time
             try {
-                Date appointmentDate = inputFormat.parse(reservation.getAppointmentDate());
-                if (appointmentDate != null) {
+                // Kiểm tra xem trường appointmentDate có phải là chuỗi hay không
+                if (reservation.getAppointmentDate() != null) {
+                    // Nếu là Date, dùng trực tiếp
+                    Date appointmentDate = reservation.getAppointmentDate();
                     tvDate.setText(outputDateFormat.format(appointmentDate));
                     tvTime.setText(outputTimeFormat.format(appointmentDate));
                 }
-            } catch (ParseException e) {
-                tvDate.setText(reservation.getAppointmentDate());
-                tvTime.setText("");
+            } catch (Exception e) {
+                // Nếu có lỗi, hiển thị gốc hoặc thời gian từ timeSlot
+                if (reservation.getTimeSlot() != null && !reservation.getTimeSlot().isEmpty()) {
+                    tvTime.setText(reservation.getTimeSlot());
+                } else {
+                    tvTime.setText("");
+                }
+                tvDate.setText(reservation.getFormattedDate());
             }
             
             // Set status with color

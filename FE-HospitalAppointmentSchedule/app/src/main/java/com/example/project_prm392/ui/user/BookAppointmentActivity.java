@@ -79,8 +79,6 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
     private EditText etDate;
     private Spinner spinnerService;
     private Spinner spinnerSchedule;
-    private Button btnBook;
-
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault());
     private final SimpleDateFormat displayDateFormat = new SimpleDateFormat(Constants.DISPLAY_DATE_FORMAT, Locale.getDefault());
     
@@ -131,7 +129,6 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
         
         spinnerService = findViewById(R.id.spinnerService);
         spinnerSchedule = findViewById(R.id.spinnerSchedule);
-        btnBook = findViewById(R.id.btnBook);
         etDate = findViewById(R.id.etDate);
     }
     
@@ -180,7 +177,6 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
     private void setupRecyclerView() {
         recyclerViewTimeSlots.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         timeSlotAdapter = new TimeSlotAdapter(timeSlots);
-        timeSlotAdapter.setOnTimeSlotSelectedListener(this);
         recyclerViewTimeSlots.setAdapter(timeSlotAdapter);
     }
     
@@ -190,7 +186,7 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position > 0) {
-                    selectedServiceId = services.get(position - 1).getServiceId();
+                    selectedServiceId = services.get(position - 1).getId();
                 } else {
                     selectedServiceId = -1;
                 }
@@ -221,7 +217,6 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
     }
     
     private void setupButtons() {
-        btnBook.setOnClickListener(v -> bookAppointment());
         btnConfirmAppointment.setOnClickListener(v -> bookAppointment());
     }
     
@@ -237,7 +232,7 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
                 tvDoctorName.setText(doctor.getUserName());
                 
                 if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
-                    tvSpecialty.setText(doctor.getSpecialties().get(0).getSpecialtyName());
+                    tvSpecialty.setText(doctor.getSpecialties().get(0).getName());
                 }
             } else {
                 String message = response != null ? response.getMessage() : "Failed to load doctor details";
