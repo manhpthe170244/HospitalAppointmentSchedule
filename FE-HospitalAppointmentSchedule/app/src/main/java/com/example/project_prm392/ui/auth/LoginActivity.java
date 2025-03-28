@@ -3,121 +3,98 @@ package com.example.project_prm392.ui.auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.project_prm392.MainActivity;
 import com.example.project_prm392.R;
-import com.example.project_prm392.models.responses.BaseResponse;
-import com.example.project_prm392.models.responses.LoginResponse;
-import com.example.project_prm392.repository.AuthRepository;
+import com.example.project_prm392.databinding.ActivityLoginBinding;
 import com.example.project_prm392.ui.admin.AdminDashboardActivity;
-import com.example.project_prm392.ui.user.UserDashboardActivity;
-
-import javax.inject.Inject;
+import com.example.project_prm392.ui.user.MainActivity;
+import com.example.project_prm392.utils.ValidationUtils;
+import com.example.project_prm392.viewmodels.AuthViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 @AndroidEntryPoint
 public class LoginActivity extends AppCompatActivity {
-    
-    private EditText etEmail, etPassword;
-    private Button btnLogin;
-    private TextView tvRegister;
-    private ProgressBar progressBar;
-    
-    @Inject
-    AuthRepository authRepository;
+    private ActivityLoginBinding binding;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        
-        // Initialize views
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        tvRegister = findViewById(R.id.tvRegister);
-        progressBar = findViewById(R.id.progressBar);
-        
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
         // Check if user is already logged in
-        if (authRepository.isLoggedIn()) {
+        if (authViewModel.isLoggedIn()) {
             navigateToAppropriateScreen();
             finish();
             return;
         }
-        
-        // Set up click listeners
-        btnLogin.setOnClickListener(v -> loginUser());
-        tvRegister.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-        });
+
+        setupViews();
     }
-    
-    private void loginUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        
+
+    private void setupViews() {
+        setSupportActionBar(binding.toolbar);
+
+        binding.loginButton.setOnClickListener(v -> attemptLogin());
+        binding.registerButton.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
+    }
+
+    private void attemptLogin() {
+        String email = binding.emailInput.getText().toString().trim();
+        String password = binding.passwordInput.getText().toString().trim();
+
         // Validate input
-        if (email.isEmpty()) {
-            etEmail.setError("Email is required");
-            etEmail.requestFocus();
+        if (!ValidationUtils.isValidEmail(email)) {
+            binding.emailLayout.setError(getString(R.string.invalid_email));
             return;
         }
-        
-        if (password.isEmpty()) {
-            etPassword.setError("Password is required");
-            etPassword.requestFocus();
+        binding.emailLayout.setError(null);
+
+        if (!ValidationUtils.isValidPassword(password)) {
+            binding.passwordLayout.setError(getString(R.string.invalid_password));
             return;
         }
-        
-        // Show progress
-        progressBar.setVisibility(View.VISIBLE);
-        btnLogin.setEnabled(false);
-        
-        // Call login API
-        authRepository.login(email, password).observe(this, result -> {
-            progressBar.setVisibility(View.GONE);
-            btnLogin.setEnabled(true);
-            
-            if (result != null) {
-                if (result.isSuccess() && result.getData() != null) {
-                    // Navigate to appropriate screen
-                    navigateToAppropriateScreen();
-                    finish();
-                } else {
-                    Toast.makeText(LoginActivity.this, result.getMessage(), Toast.LENGTH_LONG).show();
-                }
+        binding.passwordLayout.setError(null);
+
+        // Show loading
+        setLoading(true);
+
+        // Attempt login
+        authViewModel.login(email, password).observe(this, response -> {
+            setLoading(false);
+
+            if (response.isSuccess()) {
+                navigateToAppropriateScreen();
+                finish();
             } else {
-                Toast.makeText(LoginActivity.this, "Login failed. Please try again.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, response.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-    
+
     private void navigateToAppropriateScreen() {
-        String userRole = authRepository.getUserRole();
-        
-        if (userRole != null) {
-            if (userRole.equalsIgnoreCase("Admin")) {
-                startActivity(new Intent(LoginActivity.this, AdminDashboardActivity.class));
-            } else if (userRole.equalsIgnoreCase("Doctor")) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            } else if (userRole.equalsIgnoreCase("Patient")) {
-                startActivity(new Intent(LoginActivity.this, UserDashboardActivity.class));
-            } else {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            }
+        Intent intent;
+        if (authViewModel.isAdmin()) {
+            intent = new Intent(this, AdminDashboardActivity.class);
         } else {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            intent = new Intent(this, MainActivity.class);
         }
+        startActivity(intent);
+    }
+
+    private void setLoading(boolean isLoading) {
+        binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        binding.loginButton.setEnabled(!isLoading);
+        binding.registerButton.setEnabled(!isLoading);
+        binding.emailInput.setEnabled(!isLoading);
+        binding.passwordInput.setEnabled(!isLoading);
     }
 } 

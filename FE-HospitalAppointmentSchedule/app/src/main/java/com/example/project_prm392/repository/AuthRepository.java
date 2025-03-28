@@ -3,12 +3,13 @@ package com.example.project_prm392.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.project_prm392.api.ApiService;
 import com.example.project_prm392.models.requests.LoginRequest;
 import com.example.project_prm392.models.requests.RegisterRequest;
+import com.example.project_prm392.models.responses.AuthResponse;
 import com.example.project_prm392.models.responses.BaseResponse;
 import com.example.project_prm392.models.responses.LoginResponse;
 import com.example.project_prm392.models.responses.UserResponse;
-import com.example.project_prm392.network.ApiService;
 import com.example.project_prm392.utils.SessionManager;
 
 import javax.inject.Inject;
@@ -29,44 +30,39 @@ public class AuthRepository {
         this.sessionManager = sessionManager;
     }
 
-    public LiveData<BaseResponse<LoginResponse>> login(String email, String password) {
-        MutableLiveData<BaseResponse<LoginResponse>> loginResult = new MutableLiveData<>();
+    public LiveData<BaseResponse<AuthResponse>> login(String email, String password) {
+        MutableLiveData<BaseResponse<AuthResponse>> loginResult = new MutableLiveData<>();
         
-        LoginRequest loginRequest = new LoginRequest(email, password);
-        
-        apiService.login(loginRequest).enqueue(new Callback<BaseResponse<LoginResponse>>() {
+        LoginRequest request = new LoginRequest(email, password);
+        apiService.login(request).enqueue(new Callback<BaseResponse<AuthResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<LoginResponse>> call, Response<BaseResponse<LoginResponse>> response) {
+            public void onResponse(Call<BaseResponse<AuthResponse>> call, Response<BaseResponse<AuthResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<LoginResponse> baseResponse = response.body();
-                    
+                    BaseResponse<AuthResponse> baseResponse = response.body();
                     if (baseResponse.isSuccess() && baseResponse.getData() != null) {
-                        // Save auth info
-                        LoginResponse loginResponse = baseResponse.getData();
-                        sessionManager.saveAuthToken(loginResponse.getToken());
-                        sessionManager.saveRefreshToken(loginResponse.getRefreshToken());
-                        sessionManager.saveUserId(loginResponse.getUserId());
-                        sessionManager.saveUserName(loginResponse.getUserName());
-                        sessionManager.saveUserEmail(loginResponse.getEmail());
-                        
-                        // Save user role (assuming the first role)
-                        if (loginResponse.getRoles() != null && !loginResponse.getRoles().isEmpty()) {
-                            sessionManager.saveUserRole(loginResponse.getRoles().get(0));
-                        }
+                        AuthResponse authResponse = baseResponse.getData();
+                        sessionManager.saveAuthTokens(
+                            authResponse.getAccessToken(),
+                            authResponse.getRefreshToken()
+                        );
+                        sessionManager.saveUserInfo(
+                            authResponse.getUserId(),
+                            authResponse.getEmail(),
+                            authResponse.getRole()
+                        );
                     }
-                    
                     loginResult.setValue(baseResponse);
                 } else {
                     loginResult.setValue(new BaseResponse<>(false, "Login failed", null));
                 }
             }
-            
+
             @Override
-            public void onFailure(Call<BaseResponse<LoginResponse>> call, Throwable t) {
-                loginResult.setValue(new BaseResponse<>(false, "Network error: " + t.getMessage(), null));
+            public void onFailure(Call<BaseResponse<AuthResponse>> call, Throwable t) {
+                loginResult.setValue(new BaseResponse<>(false, t.getMessage(), null));
             }
         });
-        
+
         return loginResult;
     }
 
@@ -92,61 +88,43 @@ public class AuthRepository {
         return registerResult;
     }
 
-    public LiveData<BaseResponse<LoginResponse>> refreshToken() {
-        MutableLiveData<BaseResponse<LoginResponse>> refreshResult = new MutableLiveData<>();
+    public LiveData<BaseResponse<AuthResponse>> refreshToken() {
+        MutableLiveData<BaseResponse<AuthResponse>> refreshResult = new MutableLiveData<>();
         
         String refreshToken = sessionManager.getRefreshToken();
         if (refreshToken == null) {
             refreshResult.setValue(new BaseResponse<>(false, "No refresh token available", null));
             return refreshResult;
         }
-        
-        apiService.refreshToken(refreshToken).enqueue(new Callback<BaseResponse<LoginResponse>>() {
+
+        apiService.refreshToken(refreshToken).enqueue(new Callback<BaseResponse<AuthResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<LoginResponse>> call, Response<BaseResponse<LoginResponse>> response) {
+            public void onResponse(Call<BaseResponse<AuthResponse>> call, Response<BaseResponse<AuthResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<LoginResponse> baseResponse = response.body();
-                    
+                    BaseResponse<AuthResponse> baseResponse = response.body();
                     if (baseResponse.isSuccess() && baseResponse.getData() != null) {
-                        // Update tokens
-                        LoginResponse loginResponse = baseResponse.getData();
-                        sessionManager.saveAuthToken(loginResponse.getToken());
-                        sessionManager.saveRefreshToken(loginResponse.getRefreshToken());
+                        AuthResponse authResponse = baseResponse.getData();
+                        sessionManager.saveAuthTokens(
+                            authResponse.getAccessToken(),
+                            authResponse.getRefreshToken()
+                        );
                     }
-                    
                     refreshResult.setValue(baseResponse);
                 } else {
                     refreshResult.setValue(new BaseResponse<>(false, "Token refresh failed", null));
                 }
             }
-            
+
             @Override
-            public void onFailure(Call<BaseResponse<LoginResponse>> call, Throwable t) {
-                refreshResult.setValue(new BaseResponse<>(false, "Network error: " + t.getMessage(), null));
+            public void onFailure(Call<BaseResponse<AuthResponse>> call, Throwable t) {
+                refreshResult.setValue(new BaseResponse<>(false, t.getMessage(), null));
             }
         });
-        
+
         return refreshResult;
     }
 
     public void logout() {
-        // Optionally call the revoke token API
-        String refreshToken = sessionManager.getRefreshToken();
-        if (refreshToken != null) {
-            apiService.revokeToken(refreshToken).enqueue(new Callback<BaseResponse<Void>>() {
-                @Override
-                public void onResponse(Call<BaseResponse<Void>> call, Response<BaseResponse<Void>> response) {
-                    // Token revoked on server
-                }
-                
-                @Override
-                public void onFailure(Call<BaseResponse<Void>> call, Throwable t) {
-                    // Failed to revoke token, but still clear locally
-                }
-            });
-        }
-        
-        // Clear session data
         sessionManager.clearSession();
     }
 

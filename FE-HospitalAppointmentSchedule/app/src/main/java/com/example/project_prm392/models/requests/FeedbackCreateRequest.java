@@ -1,31 +1,19 @@
-package com.example.project_prm392.models.responses;
+package com.example.project_prm392.models.requests;
 
-import java.util.Date;
-
-public class FeedbackResponse {
-    private int id;
+public class FeedbackCreateRequest {
     private int reservationId;
     private int doctorId;
     private int rating;
     private String comment;
-    private Date createdAt;
-    private Date updatedAt;
 
-    public FeedbackResponse(int id, int reservationId, int doctorId, int rating,
-                          String comment, Date createdAt, Date updatedAt) {
-        this.id = id;
+    public FeedbackCreateRequest(int reservationId, int doctorId, int rating, String comment) {
         this.reservationId = reservationId;
         this.doctorId = doctorId;
         this.rating = rating;
         this.comment = comment;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    
     public int getReservationId() { return reservationId; }
     public void setReservationId(int reservationId) { this.reservationId = reservationId; }
     
@@ -37,10 +25,4 @@ public class FeedbackResponse {
     
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
-    
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-    
-    public Date getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
 } 

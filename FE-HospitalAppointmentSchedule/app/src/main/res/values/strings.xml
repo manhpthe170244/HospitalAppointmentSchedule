@@ -91,4 +91,13 @@
     <string name="weekly">Weekly</string>
     <string name="monthly">Monthly</string>
     <string name="yearly">Yearly</string>
+    
+    <!-- Doctor Form -->
+    <string name="required_field">This field is required</string>
+    <string name="invalid_email">Invalid email address</string>
+    <string name="invalid_password">Password must be at least 6 characters</string>
+    <string name="invalid_phone">Invalid phone number</string>
+    <string name="select_at_least_one_specialty">Please select at least one specialty</string>
+    <string name="doctor_created">Doctor created successfully</string>
+    <string name="doctor_updated">Doctor updated successfully</string>
 </resources>

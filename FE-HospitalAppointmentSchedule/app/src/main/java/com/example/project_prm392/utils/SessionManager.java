@@ -6,84 +6,67 @@ import android.content.SharedPreferences;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import dagger.hilt.android.qualifiers.ApplicationContext;
-
 @Singleton
 public class SessionManager {
-    private final SharedPreferences sharedPreferences;
-    
+    private static final String PREF_NAME = "hospital_app_session";
+    private static final String KEY_ACCESS_TOKEN = "access_token";
+    private static final String KEY_REFRESH_TOKEN = "refresh_token";
+    private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_ROLE = "role";
+
+    private final SharedPreferences prefs;
+    private final SharedPreferences.Editor editor;
+
     @Inject
-    public SessionManager(@ApplicationContext Context context) {
-        sharedPreferences = context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+    public SessionManager(Context context) {
+        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        editor = prefs.edit();
     }
-    
-    public void saveAuthToken(String token) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.KEY_AUTH_TOKEN, token);
+
+    public void saveAuthTokens(String accessToken, String refreshToken) {
+        editor.putString(KEY_ACCESS_TOKEN, accessToken);
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
         editor.apply();
     }
-    
-    public String getAuthToken() {
-        return sharedPreferences.getString(Constants.KEY_AUTH_TOKEN, null);
-    }
-    
-    public void saveRefreshToken(String token) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.KEY_REFRESH_TOKEN, token);
+
+    public void saveUserInfo(String userId, String email, String role) {
+        editor.putString(KEY_USER_ID, userId);
+        editor.putString(KEY_EMAIL, email);
+        editor.putString(KEY_ROLE, role);
         editor.apply();
     }
-    
+
+    public String getAccessToken() {
+        return prefs.getString(KEY_ACCESS_TOKEN, null);
+    }
+
     public String getRefreshToken() {
-        return sharedPreferences.getString(Constants.KEY_REFRESH_TOKEN, null);
+        return prefs.getString(KEY_REFRESH_TOKEN, null);
     }
-    
-    public void saveUserId(int userId) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(Constants.KEY_USER_ID, userId);
-        editor.apply();
+
+    public String getUserId() {
+        return prefs.getString(KEY_USER_ID, null);
     }
-    
-    public int getUserId() {
-        return sharedPreferences.getInt(Constants.KEY_USER_ID, -1);
+
+    public String getEmail() {
+        return prefs.getString(KEY_EMAIL, null);
     }
-    
-    public void saveUserName(String userName) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.KEY_USER_NAME, userName);
-        editor.apply();
+
+    public String getRole() {
+        return prefs.getString(KEY_ROLE, null);
     }
-    
-    public String getUserName() {
-        return sharedPreferences.getString(Constants.KEY_USER_NAME, null);
+
+    public boolean isLoggedIn() {
+        return getAccessToken() != null;
     }
-    
-    public void saveUserEmail(String userEmail) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.KEY_USER_EMAIL, userEmail);
-        editor.apply();
+
+    public boolean isAdmin() {
+        return "ADMIN".equalsIgnoreCase(getRole());
     }
-    
-    public String getUserEmail() {
-        return sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
-    }
-    
-    public void saveUserRole(String userRole) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.KEY_USER_ROLE, userRole);
-        editor.apply();
-    }
-    
-    public String getUserRole() {
-        return sharedPreferences.getString(Constants.KEY_USER_ROLE, null);
-    }
-    
+
     public void clearSession() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
-    }
-    
-    public boolean isLoggedIn() {
-        return getAuthToken() != null;
     }
 } 

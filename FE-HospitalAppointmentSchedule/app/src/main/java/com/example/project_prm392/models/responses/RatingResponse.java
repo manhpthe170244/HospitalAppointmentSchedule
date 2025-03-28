@@ -2,22 +2,24 @@ package com.example.project_prm392.models.responses;
 
 import java.util.Date;
 
-public class FeedbackResponse {
+public class RatingResponse {
     private int id;
-    private int reservationId;
     private int doctorId;
+    private int userId;
     private int rating;
     private String comment;
+    private int reservationId;
     private Date createdAt;
     private Date updatedAt;
 
-    public FeedbackResponse(int id, int reservationId, int doctorId, int rating,
-                          String comment, Date createdAt, Date updatedAt) {
+    public RatingResponse(int id, int doctorId, int userId, int rating,
+                         String comment, int reservationId, Date createdAt, Date updatedAt) {
         this.id = id;
-        this.reservationId = reservationId;
         this.doctorId = doctorId;
+        this.userId = userId;
         this.rating = rating;
         this.comment = comment;
+        this.reservationId = reservationId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -26,17 +28,20 @@ public class FeedbackResponse {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     
-    public int getReservationId() { return reservationId; }
-    public void setReservationId(int reservationId) { this.reservationId = reservationId; }
-    
     public int getDoctorId() { return doctorId; }
     public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
+    
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
     
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
     
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+    
+    public int getReservationId() { return reservationId; }
+    public void setReservationId(int reservationId) { this.reservationId = reservationId; }
     
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }

@@ -19,21 +19,18 @@ import com.example.project_prm392.adapters.CertificationsAdapter;
 import com.example.project_prm392.adapters.SchedulesAdapter;
 import com.example.project_prm392.adapters.ServicesAdapter;
 import com.example.project_prm392.models.responses.BaseResponse;
-import com.example.project_prm392.models.responses.CertificationResponse;
 import com.example.project_prm392.models.responses.DoctorDetailsResponse;
-import com.example.project_prm392.models.responses.DoctorScheduleResponse;
-import com.example.project_prm392.models.responses.ServiceResponse;
 import com.example.project_prm392.repository.DoctorRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @AndroidEntryPoint
-public class DoctorDetailActivity extends AppCompatActivity implements ServicesAdapter.OnServiceClickListener, SchedulesAdapter.OnScheduleClickListener {
+public class DoctorDetailActivity extends AppCompatActivity implements ServicesAdapter.OnServiceClickListener {
 
     @Inject
     DoctorRepository doctorRepository;
@@ -49,14 +46,6 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
     private RecyclerView recyclerViewCertifications;
     private Button btnBookAppointment;
 
-    private final List<ServiceResponse> servicesList = new ArrayList<>();
-    private final List<DoctorScheduleResponse> schedulesList = new ArrayList<>();
-    private final List<CertificationResponse> certificationsList = new ArrayList<>();
-
-    private ServicesAdapter servicesAdapter;
-    private SchedulesAdapter schedulesAdapter;
-    private CertificationsAdapter certificationsAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +60,6 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
 
         initViews();
         setupToolbar();
-        setupRecyclerViews();
         loadDoctorDetails();
     }
 
@@ -80,11 +68,15 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
         tvDoctorName = findViewById(R.id.tvDoctorName);
         tvSpecialty = findViewById(R.id.tvSpecialty);
         tvExperience = findViewById(R.id.tvExperience);
-        tvDescription = findViewById(R.id.tvDoctorDescription);
+        tvDescription = findViewById(R.id.tvDescription);
         recyclerViewServices = findViewById(R.id.recyclerViewServices);
         recyclerViewSchedules = findViewById(R.id.recyclerViewSchedules);
         recyclerViewCertifications = findViewById(R.id.recyclerViewCertifications);
         btnBookAppointment = findViewById(R.id.btnBookAppointment);
+
+        recyclerViewServices.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewSchedules.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewCertifications.setLayoutManager(new LinearLayoutManager(this));
 
         btnBookAppointment.setOnClickListener(v -> navigateToBookAppointment());
     }
@@ -98,104 +90,73 @@ public class DoctorDetailActivity extends AppCompatActivity implements ServicesA
         }
     }
 
-    private void setupRecyclerViews() {
-        // Setup Services RecyclerView
-        recyclerViewServices.setLayoutManager(new LinearLayoutManager(this));
-        servicesAdapter = new ServicesAdapter(servicesList, this);
-        recyclerViewServices.setAdapter(servicesAdapter);
-
-        // Setup Schedules RecyclerView
-        recyclerViewSchedules.setLayoutManager(new LinearLayoutManager(this));
-        schedulesAdapter = new SchedulesAdapter(schedulesList, this);
-        recyclerViewSchedules.setAdapter(schedulesAdapter);
-
-        // Setup Certifications RecyclerView
-        recyclerViewCertifications.setLayoutManager(new LinearLayoutManager(this));
-        certificationsAdapter = new CertificationsAdapter(certificationsList);
-        recyclerViewCertifications.setAdapter(certificationsAdapter);
-    }
-
     private void loadDoctorDetails() {
         progressBar.setVisibility(View.VISIBLE);
-        
-        doctorRepository.getDoctorById(doctorId).observe(this, response -> {
-            if (response != null && response.isSuccess()) {
-                DoctorDetailsResponse doctor = response.getData();
-                displayDoctorDetails(doctor);
-            } else {
-                String message = response != null ? response.getMessage() : "Failed to load doctor details";
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+        doctorRepository.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseResponse<DoctorDetailsResponse>> call, @NonNull Response<BaseResponse<DoctorDetailsResponse>> response) {
+                progressBar.setVisibility(View.GONE);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    DoctorDetailsResponse doctor = response.body().getData();
+                    displayDoctorDetails(doctor);
+                } else {
+                    Toast.makeText(DoctorDetailActivity.this, "Failed to load doctor details", Toast.LENGTH_SHORT).show();
+                }
             }
-            progressBar.setVisibility(View.GONE);
+
+            @Override
+            public void onFailure(@NonNull Call<BaseResponse<DoctorDetailsResponse>> call, @NonNull Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(DoctorDetailActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
-        
-        loadDoctorSchedules();
     }
 
     private void displayDoctorDetails(DoctorDetailsResponse doctor) {
         tvDoctorName.setText(doctor.getUserName());
-        tvSpecialty.setText(doctor.getSpecialtyName());
-        tvExperience.setText(String.format("%d years of experience", doctor.getYearsOfExperience()));
-        tvDescription.setText(doctor.getDescription());
-
-        // Update services list
-        servicesList.clear();
-        if (doctor.getServices() != null) {
-            servicesList.addAll(doctor.getServices());
+        if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
+            tvSpecialty.setText(doctor.getSpecialties().get(0).getSpecialtyName());
         }
-        servicesAdapter.notifyDataSetChanged();
+        tvExperience.setText(String.format("%d years of experience", doctor.getExperience()));
+        tvDescription.setText(doctor.getDoctorDescription());
 
-        // Update certifications list
-        certificationsList.clear();
-        if (doctor.getCertifications() != null) {
-            certificationsList.addAll(doctor.getCertifications());
-        }
-        certificationsAdapter.notifyDataSetChanged();
+        // Set up services adapter
+        ServicesAdapter servicesAdapter = new ServicesAdapter(doctor.getServices(), this);
+        recyclerViewServices.setAdapter(servicesAdapter);
+
+        // Set up schedules adapter
+        SchedulesAdapter schedulesAdapter = new SchedulesAdapter(doctor.getSchedules());
+        recyclerViewSchedules.setAdapter(schedulesAdapter);
+
+        // Set up certifications adapter
+        CertificationsAdapter certificationsAdapter = new CertificationsAdapter(doctor.getCertifications());
+        recyclerViewCertifications.setAdapter(certificationsAdapter);
     }
 
-    private void loadDoctorSchedules() {
-        progressBar.setVisibility(View.VISIBLE);
-        
-        doctorRepository.getDoctorSchedules(doctorId).observe(this, response -> {
-            if (response != null && response.isSuccess()) {
-                schedulesList.clear();
-                if (response.getData() != null) {
-                    schedulesList.addAll(response.getData());
-                }
-                schedulesAdapter.notifyDataSetChanged();
-            } else {
-                String message = response != null ? response.getMessage() : "Failed to load schedules";
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            }
-            progressBar.setVisibility(View.GONE);
-        });
+    private void navigateToBookAppointment() {
+        Intent intent = new Intent(this, BookAppointmentActivity.class);
+        intent.putExtra("doctorId", doctorId);
+        intent.putExtra("doctorName", tvDoctorName.getText().toString());
+        intent.putExtra("specialty", tvSpecialty.getText().toString());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onServiceClick(int serviceId) {
+        // Handle service click - maybe show service details or pre-select service in booking
+        Intent intent = new Intent(this, BookAppointmentActivity.class);
+        intent.putExtra("doctorId", doctorId);
+        intent.putExtra("serviceId", serviceId);
+        intent.putExtra("doctorName", tvDoctorName.getText().toString());
+        intent.putExtra("specialty", tvSpecialty.getText().toString());
+        startActivity(intent);
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-
-    @Override
-    public void onServiceClick(int serviceId) {
-        navigateToBookAppointment(serviceId);
-    }
-
-    @Override
-    public void onScheduleClick(DoctorScheduleResponse schedule) {
-        navigateToBookAppointment(schedule.getServiceId());
-    }
-
-    private void navigateToBookAppointment(int serviceId) {
-        Intent intent = new Intent(this, BookAppointmentActivity.class);
-        intent.putExtra("doctorId", doctorId);
-        intent.putExtra("serviceId", serviceId);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
     }
 } 
