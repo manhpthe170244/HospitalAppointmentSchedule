@@ -1,61 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ui.home.HomeFragment">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:queryHint="Tìm kiếm bác sĩ, dịch vụ..." />
+        </androidx.cardview.widget.CardView>
 
         <TextView
+            android:id="@+id/tvFeaturedDoctors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome to Hospital Appointment"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/featured_doctors"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardSearch" />
 
         <TextView
+            android:id="@+id/tvViewAllDoctors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Book your appointment with our expert doctors"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Specialties"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_marginEnd="16dp"
+            android:text="Xem tất cả"
+            android:textColor="@color/purple_500"
+            app:layout_constraintBottom_toBottomOf="@id/tvFeaturedDoctors"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvFeaturedDoctors" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/specialtiesRecyclerView"
+            android:id="@+id/rvFeaturedDoctors"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@id/tvFeaturedDoctors"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_doctor" />
 
         <TextView
+            android:id="@+id/tvPopularServices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Top Doctors"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/popular_services"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rvFeaturedDoctors" />
+
+        <TextView
+            android:id="@+id/tvViewAllServices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="Xem tất cả"
+            android:textColor="@color/purple_500"
+            app:layout_constraintBottom_toBottomOf="@id/tvPopularServices"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvPopularServices" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/doctorsRecyclerView"
+            android:id="@+id/rvPopularServices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@id/tvPopularServices"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_service" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/tvUpcomingAppointments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Lịch khám sắp tới"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rvPopularServices" />
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardNextAppointment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvUpcomingAppointments">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvAppointmentDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ngày 15/04/2023"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvAppointmentTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="09:00 - 09:30"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvAppointmentDate" />
+
+                <TextView
+                    android:id="@+id/tvAppointmentDoctor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Bác sĩ: Nguyễn Văn A"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvAppointmentTime" />
+
+                <TextView
+                    android:id="@+id/tvAppointmentService"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dịch vụ: Khám tổng quát"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvAppointmentDoctor" />
+
+                <Button
+                    android:id="@+id/btnViewAppointment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Xem chi tiết"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvAppointmentService" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView> 

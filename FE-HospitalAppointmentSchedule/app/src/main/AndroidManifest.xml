@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".HospitalApplication"
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HospitalAppointmentSchedule"
         android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="31">
         
         <!-- Màn hình chính của ứng dụng -->
@@ -76,6 +77,27 @@
         <activity android:name=".ui.user.ServiceDetailActivity" />
         <activity android:name=".ui.user.MyAppointmentsActivity" />
         <activity android:name=".ui.user.BookAppointmentActivity" />
+        <activity
+            android:name=".ui.doctor.DoctorDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.service.ServiceDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.reservation.BookAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.reservation.AppointmentDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.reservation.RescheduleAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.reservation.SelectDoctorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.profile.ChangePasswordActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

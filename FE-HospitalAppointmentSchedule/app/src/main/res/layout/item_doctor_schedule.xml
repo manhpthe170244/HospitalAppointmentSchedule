@@ -7,68 +7,27 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:padding="12dp">
 
         <TextView
             android:id="@+id/tvDayOfWeek"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Monday"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_weight="1"
+            android:text="Thứ Hai"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvSlotTime"
+            android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="9:00 AM - 12:00 PM"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDayOfWeek" />
-
-        <TextView
-            android:id="@+id/tvRoomLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Room:"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvSlotTime" />
-
-        <TextView
-            android:id="@+id/tvRoomName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="Room 101"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@+id/tvRoomLabel"
-            app:layout_constraintStart_toEndOf="@+id/tvRoomLabel"
-            app:layout_constraintTop_toTopOf="@+id/tvRoomLabel" />
-
-        <Button
-            android:id="@+id/btnBookSlot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/design_default_color_primary"
-            android:minWidth="0dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:text="Book"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+            android:text="08:00 - 17:00"
+            android:textColor="@color/purple_500"
+            android:textSize="14sp" />
+    </LinearLayout>
 </androidx.cardview.widget.CardView> 

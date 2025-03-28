@@ -3,63 +3,71 @@ package com.example.project_prm392.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-public class SessionManager {
-    private static final String PREF_NAME = "HospitalAppSession";
-    private static final String KEY_TOKEN = "token";
-    private static final String KEY_USER_ID = "userId";
-    private static final String KEY_USER_ROLE = "userRole";
-    private static final String KEY_USER_NAME = "userName";
-    
-    private final SharedPreferences prefs;
-    private final SharedPreferences.Editor editor;
-    private static SessionManager instance;
+import com.example.project_prm392.MyApplication;
+import com.example.project_prm392.model.User;
+import com.google.gson.Gson;
 
-    public SessionManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        editor = prefs.edit();
+public class SessionManager {
+    private static SessionManager instance;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+
+    private SessionManager() {
+        // Private constructor for singleton
     }
 
-    public static synchronized SessionManager getInstance(Context context) {
+    public static SessionManager getInstance() {
         if (instance == null) {
-            instance = new SessionManager(context.getApplicationContext());
+            instance = new SessionManager();
         }
         return instance;
     }
 
+    public void init(Context context) {
+        if (sharedPreferences == null) {
+            sharedPreferences = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
+            editor = sharedPreferences.edit();
+        }
+    }
+
     public void saveAuthToken(String token) {
-        editor.putString(KEY_TOKEN, token);
+        editor.putString(Constants.PREF_TOKEN, token);
         editor.apply();
     }
 
     public String getAuthToken() {
-        return prefs.getString(KEY_TOKEN, null);
+        return sharedPreferences.getString(Constants.PREF_TOKEN, null);
+    }
+
+    public void saveRefreshToken(String refreshToken) {
+        editor.putString(Constants.PREF_REFRESH_TOKEN, refreshToken);
+        editor.apply();
+    }
+
+    public String getRefreshToken() {
+        return sharedPreferences.getString(Constants.PREF_REFRESH_TOKEN, null);
     }
 
     public void saveUserId(int userId) {
-        editor.putInt(KEY_USER_ID, userId);
+        editor.putInt(Constants.PREF_USER_ID, userId);
         editor.apply();
     }
 
     public int getUserId() {
-        return prefs.getInt(KEY_USER_ID, -1);
+        return sharedPreferences.getInt(Constants.PREF_USER_ID, -1);
     }
 
-    public void saveUserRole(String role) {
-        editor.putString(KEY_USER_ROLE, role);
+    public void saveUsername(String username) {
+        editor.putString(Constants.PREF_USERNAME, username);
         editor.apply();
     }
 
-    public String getUserRole() {
-        return prefs.getString(KEY_USER_ROLE, null);
+    public String getUsername() {
+        return sharedPreferences.getString(Constants.PREF_USERNAME, "");
     }
 
-    public void saveUserName(String userName) {
-        editor.putString(KEY_USER_NAME, userName);
-        editor.apply();
-    }
-
-    public String getUserName() {
-        return prefs.getString(KEY_USER_NAME, null);
+    public boolean isLoggedIn() {
+        return getAuthToken() != null;
     }
 
     public void clearSession() {
@@ -67,17 +75,31 @@ public class SessionManager {
         editor.apply();
     }
 
-    public boolean isLoggedIn() {
-        return getAuthToken() != null;
+    public void saveUserRole(String role) {
+        editor.putString(Constants.USER_ROLE, role);
+        editor.apply();
     }
 
-    public boolean isAdmin() {
+    public String getUserRole() {
+        return sharedPreferences.getString(Constants.USER_ROLE, null);
     }
 
-    public String getRole() {
+    public void saveUser(User user) {
+        Gson gson = new Gson();
+        String userJson = gson.toJson(user);
+        editor.putString("user_data", userJson);
+        editor.apply();
+
+        saveUserId(user.getUserId());
+        saveUserRole(user.getRole());
     }
 
-    public String getEmail() {
+    public User getUser() {
+        String userJson = sharedPreferences.getString("user_data", null);
+        if (userJson != null) {
+            Gson gson = new Gson();
+            return gson.fromJson(userJson, User.class);
+        }
         return null;
     }
 } 

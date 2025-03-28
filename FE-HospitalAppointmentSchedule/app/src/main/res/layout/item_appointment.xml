@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -17,7 +16,7 @@
             android:id="@+id/tvAppointmentDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="May 15, 2023"
+            android:text="Ngày 15/04/2023"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -27,126 +26,63 @@
             android:id="@+id/tvAppointmentTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="10:30 AM"
-            android:textSize="16sp"
-            app:layout_constraintStart_toEndOf="@+id/tvAppointmentDate"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="09:00 - 09:30"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentDate" />
+
+        <TextView
+            android:id="@+id/tvAppointmentDoctor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Bác sĩ: Nguyễn Văn A"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentTime" />
+
+        <TextView
+            android:id="@+id/tvAppointmentService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dịch vụ: Khám tổng quát"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentDoctor" />
 
         <TextView
             android:id="@+id/tvAppointmentStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/search_background"
+            android:background="@drawable/status_background"
             android:paddingStart="8dp"
             android:paddingTop="2dp"
             android:paddingEnd="8dp"
             android:paddingBottom="2dp"
-            android:text="Confirmed"
-            android:textColor="#4CAF50"
-            android:textSize="14sp"
+            android:text="Chờ khám"
+            android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="#E0E0E0"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvAppointmentDate" />
-
-        <TextView
-            android:id="@+id/tvDoctorLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Doctor:"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider" />
-
-        <TextView
-            android:id="@+id/tvDoctorName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Dr. John Doe"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tvDoctorLabel"
-            app:layout_constraintTop_toTopOf="@+id/tvDoctorLabel" />
-
-        <TextView
-            android:id="@+id/tvSpecialtyLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Specialty:"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDoctorName" />
-
-        <TextView
-            android:id="@+id/tvSpecialty"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Cardiology"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tvSpecialtyLabel"
-            app:layout_constraintTop_toTopOf="@+id/tvSpecialtyLabel" />
-
-        <TextView
-            android:id="@+id/tvReasonLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Reason:"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvSpecialty" />
-
-        <TextView
-            android:id="@+id/tvReason"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Annual checkup"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tvReasonLabel"
-            app:layout_constraintTop_toTopOf="@+id/tvReasonLabel" />
-
         <Button
-            android:id="@+id/btnCancelAppointment"
+            android:id="@+id/btnCancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#F44336"
-            android:text="Cancel"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
+            android:text="Hủy lịch"
+            android:textColor="@android:color/holo_red_dark"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvReason" />
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentService" />
 
         <Button
             android:id="@+id/btnReschedule"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:backgroundTint="#FF9800"
-            android:text="Reschedule"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toStartOf="@+id/btnCancelAppointment"
-            app:layout_constraintTop_toTopOf="@+id/btnCancelAppointment" />
+            android:text="Đổi lịch"
+            android:textColor="@color/purple_500"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnCancel"
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentService" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView> 

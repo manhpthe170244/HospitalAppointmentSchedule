@@ -3,125 +3,172 @@ package com.example.project_prm392.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.project_prm392.api.ApiService;
-import com.example.project_prm392.models.requests.LoginRequest;
-import com.example.project_prm392.models.requests.RegisterRequest;
-import com.example.project_prm392.models.responses.AuthResponse;
-import com.example.project_prm392.models.responses.BaseResponse;
-import com.example.project_prm392.models.responses.LoginResponse;
-import com.example.project_prm392.models.responses.UserResponse;
+import com.example.project_prm392.api.ApiResponse;
+import com.example.project_prm392.api.ServiceGenerator;
+import com.example.project_prm392.api.request.LoginRequest;
+import com.example.project_prm392.api.request.RefreshTokenRequest;
+import com.example.project_prm392.api.request.RegisterRequest;
+import com.example.project_prm392.api.response.LoginResponse;
+import com.example.project_prm392.api.service.AuthService;
+import com.example.project_prm392.utils.Resource;
 import com.example.project_prm392.utils.SessionManager;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-@Singleton
 public class AuthRepository {
-    private final ApiService apiService;
+    private final AuthService authService;
     private final SessionManager sessionManager;
 
-    @Inject
-    public AuthRepository(ApiService apiService, SessionManager sessionManager) {
-        this.apiService = apiService;
-        this.sessionManager = sessionManager;
+    public AuthRepository() {
+        this.authService = ServiceGenerator.getAuthService();
+        this.sessionManager = SessionManager.getInstance();
     }
 
-    public LiveData<BaseResponse<AuthResponse>> login(String email, String password) {
-        MutableLiveData<BaseResponse<AuthResponse>> loginResult = new MutableLiveData<>();
+    public LiveData<Resource<LoginResponse>> login(String username, String password) {
+        MutableLiveData<Resource<LoginResponse>> loginLiveData = new MutableLiveData<>();
         
-        LoginRequest request = new LoginRequest(email, password);
-        apiService.login(request).enqueue(new Callback<BaseResponse<AuthResponse>>() {
+        // Bắt đầu loading
+        loginLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API đăng nhập
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        authService.login(loginRequest).enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<AuthResponse>> call, Response<BaseResponse<AuthResponse>> response) {
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<AuthResponse> baseResponse = response.body();
-                    if (baseResponse.isSuccess() && baseResponse.getData() != null) {
-                        AuthResponse authResponse = baseResponse.getData();
-                        sessionManager.saveAuthTokens(
-                            authResponse.getAccessToken(),
-                            authResponse.getRefreshToken()
-                        );
-                        sessionManager.saveUserInfo(
-                            authResponse.getUserId(),
-                            authResponse.getEmail(),
-                            authResponse.getRole()
-                        );
+                    ApiResponse<LoginResponse> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Lưu thông tin đăng nhập
+                        LoginResponse loginResponse = apiResponse.getData();
+                        sessionManager.saveAuthToken(loginResponse.getToken());
+                        sessionManager.saveRefreshToken(loginResponse.getRefreshToken());
+                        sessionManager.saveUser(loginResponse.getUser());
+                        
+                        // Thông báo thành công
+                        loginLiveData.setValue(Resource.success(loginResponse));
+                    } else {
+                        // Thông báo lỗi từ server
+                        loginLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
                     }
-                    loginResult.setValue(baseResponse);
                 } else {
-                    loginResult.setValue(new BaseResponse<>(false, "Login failed", null));
+                    // Thông báo lỗi HTTP
+                    loginLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<AuthResponse>> call, Throwable t) {
-                loginResult.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                loginLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
-
-        return loginResult;
+        
+        return loginLiveData;
     }
 
-    public LiveData<BaseResponse<UserResponse>> register(RegisterRequest registerRequest) {
-        MutableLiveData<BaseResponse<UserResponse>> registerResult = new MutableLiveData<>();
+    public LiveData<Resource<LoginResponse>> register(String username, String password, String email, 
+                                                     String fullName, String phoneNumber, String address) {
+        MutableLiveData<Resource<LoginResponse>> registerLiveData = new MutableLiveData<>();
         
-        apiService.register(registerRequest).enqueue(new Callback<BaseResponse<UserResponse>>() {
+        // Bắt đầu loading
+        registerLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API đăng ký
+        RegisterRequest registerRequest = new RegisterRequest(
+                username, password, email, fullName, phoneNumber, address, "Patient");
+        
+        authService.register(registerRequest).enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<UserResponse>> call, Response<BaseResponse<UserResponse>> response) {
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    registerResult.setValue(response.body());
+                    ApiResponse<LoginResponse> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Lưu thông tin đăng nhập
+                        LoginResponse loginResponse = apiResponse.getData();
+                        sessionManager.saveAuthToken(loginResponse.getToken());
+                        sessionManager.saveRefreshToken(loginResponse.getRefreshToken());
+                        sessionManager.saveUser(loginResponse.getUser());
+                        
+                        // Thông báo thành công
+                        registerLiveData.setValue(Resource.success(loginResponse));
+                    } else {
+                        // Thông báo lỗi từ server
+                        registerLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    registerResult.setValue(new BaseResponse<>(false, "Registration failed", null));
+                    // Thông báo lỗi HTTP
+                    registerLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
-            
+
             @Override
-            public void onFailure(Call<BaseResponse<UserResponse>> call, Throwable t) {
-                registerResult.setValue(new BaseResponse<>(false, "Network error: " + t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                registerLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return registerResult;
+        return registerLiveData;
     }
 
-    public LiveData<BaseResponse<AuthResponse>> refreshToken() {
-        MutableLiveData<BaseResponse<AuthResponse>> refreshResult = new MutableLiveData<>();
+    public LiveData<Resource<LoginResponse>> refreshToken() {
+        MutableLiveData<Resource<LoginResponse>> refreshTokenLiveData = new MutableLiveData<>();
         
+        // Bắt đầu loading
+        refreshTokenLiveData.setValue(Resource.loading(null));
+        
+        // Lấy refresh token
         String refreshToken = sessionManager.getRefreshToken();
         if (refreshToken == null) {
-            refreshResult.setValue(new BaseResponse<>(false, "No refresh token available", null));
-            return refreshResult;
+            refreshTokenLiveData.setValue(Resource.error("Refresh token không tồn tại", null));
+            return refreshTokenLiveData;
         }
-
-        apiService.refreshToken(refreshToken).enqueue(new Callback<BaseResponse<AuthResponse>>() {
+        
+        // Gọi API refresh token
+        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(refreshToken);
+        
+        authService.refreshToken(refreshTokenRequest).enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
-            public void onResponse(Call<BaseResponse<AuthResponse>> call, Response<BaseResponse<AuthResponse>> response) {
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<AuthResponse> baseResponse = response.body();
-                    if (baseResponse.isSuccess() && baseResponse.getData() != null) {
-                        AuthResponse authResponse = baseResponse.getData();
-                        sessionManager.saveAuthTokens(
-                            authResponse.getAccessToken(),
-                            authResponse.getRefreshToken()
-                        );
+                    ApiResponse<LoginResponse> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Lưu thông tin đăng nhập mới
+                        LoginResponse loginResponse = apiResponse.getData();
+                        sessionManager.saveAuthToken(loginResponse.getToken());
+                        sessionManager.saveRefreshToken(loginResponse.getRefreshToken());
+                        
+                        // Thông báo thành công
+                        refreshTokenLiveData.setValue(Resource.success(loginResponse));
+                    } else {
+                        // Thông báo lỗi từ server
+                        refreshTokenLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                        
+                        // Xóa session nếu refresh token không hợp lệ
+                        sessionManager.clearSession();
                     }
-                    refreshResult.setValue(baseResponse);
                 } else {
-                    refreshResult.setValue(new BaseResponse<>(false, "Token refresh failed", null));
+                    // Thông báo lỗi HTTP
+                    refreshTokenLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
+                    
+                    // Xóa session nếu refresh token không hợp lệ
+                    sessionManager.clearSession();
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<AuthResponse>> call, Throwable t) {
-                refreshResult.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                refreshTokenLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
-
-        return refreshResult;
+        
+        return refreshTokenLiveData;
     }
 
     public void logout() {
@@ -130,9 +177,5 @@ public class AuthRepository {
 
     public boolean isLoggedIn() {
         return sessionManager.isLoggedIn();
-    }
-
-    public String getUserRole() {
-        return sessionManager.getUserRole();
     }
 } 

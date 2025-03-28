@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cho phép kết nối HTTP trong quá trình debug -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+
+    <!-- Cấu hình chỉ cho phép cleartext (HTTP) cho máy chủ local trong môi trường phát triển -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <!-- Thêm các domain khác khi cần thiết -->
+    </domain-config>
+
+    <!-- Cấu hình chung cho tất cả các domain khác -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config> 

@@ -3,449 +3,249 @@ package com.example.project_prm392.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.project_prm392.api.ApiService;
-import com.example.project_prm392.models.requests.ReservationCreateRequest;
-import com.example.project_prm392.models.requests.ReservationUpdateRequest;
-import com.example.project_prm392.models.requests.PaymentCreateRequest;
-import com.example.project_prm392.models.requests.MedicalRecordCreateRequest;
-import com.example.project_prm392.models.requests.FeedbackCreateRequest;
-import com.example.project_prm392.models.responses.BaseResponse;
-import com.example.project_prm392.models.responses.ReservationDetailsResponse;
-import com.example.project_prm392.models.responses.ReservationResponse;
-import com.example.project_prm392.models.responses.PaymentResponse;
-import com.example.project_prm392.models.responses.MedicalRecordResponse;
-import com.example.project_prm392.models.responses.FeedbackResponse;
-import com.example.project_prm392.models.responses.PaginatedResponse;
+import com.example.project_prm392.api.ApiResponse;
+import com.example.project_prm392.api.ServiceGenerator;
+import com.example.project_prm392.api.service.ReservationService;
+import com.example.project_prm392.model.Reservation;
+import com.example.project_prm392.utils.Resource;
+import com.example.project_prm392.utils.SessionManager;
 
-import java.util.Date;
 import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-@Singleton
 public class ReservationRepository {
-    private final ApiService apiService;
+    private final ReservationService reservationService;
+    private final SessionManager sessionManager;
 
-    @Inject
-    public ReservationRepository(ApiService apiService) {
-        this.apiService = apiService;
+    public ReservationRepository() {
+        reservationService = ServiceGenerator.getReservationService();
+        sessionManager = SessionManager.getInstance();
     }
 
-    public LiveData<BaseResponse<PaginatedResponse<ReservationResponse>>> getUserReservations() {
-        MutableLiveData<BaseResponse<PaginatedResponse<ReservationResponse>>> result = new MutableLiveData<>();
+    public LiveData<Resource<List<Reservation>>> getReservationsByPatient() {
+        MutableLiveData<Resource<List<Reservation>>> reservationsLiveData = new MutableLiveData<>();
         
-        apiService.getUserReservations().enqueue(new Callback<BaseResponse<PaginatedResponse<ReservationResponse>>>() {
+        // Bắt đầu loading
+        reservationsLiveData.setValue(Resource.loading(null));
+        
+        // Kiểm tra đăng nhập
+        if (!sessionManager.isLoggedIn()) {
+            reservationsLiveData.setValue(Resource.error("Người dùng chưa đăng nhập", null));
+            return reservationsLiveData;
+        }
+        
+        int patientId = sessionManager.getUserId();
+        
+        // Gọi API lấy danh sách đặt lịch của bệnh nhân
+        reservationService.getReservationsByPatient(patientId).enqueue(new Callback<ApiResponse<List<Reservation>>>() {
             @Override
-            public void onResponse(Call<BaseResponse<PaginatedResponse<ReservationResponse>>> call, 
-                                 Response<BaseResponse<PaginatedResponse<ReservationResponse>>> response) {
+            public void onResponse(Call<ApiResponse<List<Reservation>>> call, Response<ApiResponse<List<Reservation>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<List<Reservation>> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Thông báo thành công
+                        reservationsLiveData.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        // Thông báo lỗi từ server
+                        reservationsLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservations", null));
+                    // Thông báo lỗi HTTP
+                    reservationsLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<PaginatedResponse<ReservationResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<List<Reservation>>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                reservationsLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
+        return reservationsLiveData;
     }
 
-    public LiveData<BaseResponse<ReservationResponse>> getReservationById(int reservationId) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
+    public LiveData<Resource<Reservation>> getReservationById(int reservationId) {
+        MutableLiveData<Resource<Reservation>> reservationLiveData = new MutableLiveData<>();
         
-        apiService.getReservationById(reservationId).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
+        // Bắt đầu loading
+        reservationLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API lấy thông tin đặt lịch theo ID
+        reservationService.getReservationById(reservationId).enqueue(new Callback<ApiResponse<Reservation>>() {
             @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
+            public void onResponse(Call<ApiResponse<Reservation>> call, Response<ApiResponse<Reservation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<Reservation> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Thông báo thành công
+                        reservationLiveData.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        // Thông báo lỗi từ server
+                        reservationLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservation", null));
+                    // Thông báo lỗi HTTP
+                    reservationLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<Reservation>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                reservationLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
+        return reservationLiveData;
     }
 
-    public LiveData<BaseResponse<ReservationDetailsResponse>> getReservationDetails(int reservationId) {
-        MutableLiveData<BaseResponse<ReservationDetailsResponse>> result = new MutableLiveData<>();
+    public LiveData<Resource<Reservation>> createReservation(Reservation reservation) {
+        MutableLiveData<Resource<Reservation>> reservationLiveData = new MutableLiveData<>();
         
-        apiService.getReservationDetails(reservationId).enqueue(new Callback<BaseResponse<ReservationDetailsResponse>>() {
+        // Bắt đầu loading
+        reservationLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API tạo đặt lịch mới
+        reservationService.createReservation(reservation).enqueue(new Callback<ApiResponse<Reservation>>() {
             @Override
-            public void onResponse(Call<BaseResponse<ReservationDetailsResponse>> call, 
-                                 Response<BaseResponse<ReservationDetailsResponse>> response) {
+            public void onResponse(Call<ApiResponse<Reservation>> call, Response<ApiResponse<Reservation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<Reservation> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Thông báo thành công
+                        reservationLiveData.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        // Thông báo lỗi từ server
+                        reservationLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservation details", null));
+                    // Thông báo lỗi HTTP
+                    reservationLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<ReservationDetailsResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<Reservation>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                reservationLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
+        return reservationLiveData;
     }
 
-    public LiveData<BaseResponse<List<ReservationResponse>>> getReservationsByPatient(int patientId) {
-        MutableLiveData<BaseResponse<List<ReservationResponse>>> result = new MutableLiveData<>();
+    public LiveData<Resource<Reservation>> updateReservation(Reservation reservation) {
+        MutableLiveData<Resource<Reservation>> reservationLiveData = new MutableLiveData<>();
         
-        apiService.getReservationsByPatient(patientId).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
+        // Bắt đầu loading
+        reservationLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API cập nhật đặt lịch
+        reservationService.updateReservation(reservation.getReservationId(), reservation).enqueue(new Callback<ApiResponse<Reservation>>() {
             @Override
-            public void onResponse(Call<BaseResponse<List<ReservationResponse>>> call, 
-                                 Response<BaseResponse<List<ReservationResponse>>> response) {
+            public void onResponse(Call<ApiResponse<Reservation>> call, Response<ApiResponse<Reservation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<Reservation> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Thông báo thành công
+                        reservationLiveData.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        // Thông báo lỗi từ server
+                        reservationLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get patient reservations", null));
+                    // Thông báo lỗi HTTP
+                    reservationLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<List<ReservationResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<Reservation>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                reservationLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
+        return reservationLiveData;
     }
 
-    public LiveData<BaseResponse<List<ReservationResponse>>> getReservationsByDateRange(Date startDate, Date endDate) {
-        MutableLiveData<BaseResponse<List<ReservationResponse>>> result = new MutableLiveData<>();
+    public LiveData<Resource<Reservation>> updateReservationStatus(int reservationId, String status) {
+        MutableLiveData<Resource<Reservation>> reservationLiveData = new MutableLiveData<>();
         
-        apiService.getReservationsByDateRange(startDate, endDate).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
+        // Bắt đầu loading
+        reservationLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API cập nhật trạng thái đặt lịch
+        reservationService.updateReservationStatus(reservationId, status).enqueue(new Callback<ApiResponse<Reservation>>() {
             @Override
-            public void onResponse(Call<BaseResponse<List<ReservationResponse>>> call, 
-                                 Response<BaseResponse<List<ReservationResponse>>> response) {
+            public void onResponse(Call<ApiResponse<Reservation>> call, Response<ApiResponse<Reservation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<Reservation> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Thông báo thành công
+                        reservationLiveData.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        // Thông báo lỗi từ server
+                        reservationLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservations by date range", null));
+                    // Thông báo lỗi HTTP
+                    reservationLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<List<ReservationResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<Reservation>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                reservationLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
+        return reservationLiveData;
     }
 
-    public LiveData<BaseResponse<List<ReservationResponse>>> getReservationsByStatus(String status) {
-        MutableLiveData<BaseResponse<List<ReservationResponse>>> result = new MutableLiveData<>();
+    public LiveData<Resource<Void>> cancelReservation(int reservationId) {
+        MutableLiveData<Resource<Void>> resultLiveData = new MutableLiveData<>();
         
-        apiService.getReservationsByStatus(status).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
+        // Bắt đầu loading
+        resultLiveData.setValue(Resource.loading(null));
+        
+        // Gọi API xóa đặt lịch
+        reservationService.deleteReservation(reservationId).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(Call<BaseResponse<List<ReservationResponse>>> call, 
-                                 Response<BaseResponse<List<ReservationResponse>>> response) {
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
+                    ApiResponse<Void> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess()) {
+                        // Thông báo thành công
+                        resultLiveData.setValue(Resource.success(null));
+                    } else {
+                        // Thông báo lỗi từ server
+                        resultLiveData.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservations by status", null));
+                    // Thông báo lỗi HTTP
+                    resultLiveData.setValue(Resource.error("Lỗi kết nối: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(Call<BaseResponse<List<ReservationResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                // Thông báo lỗi mạng
+                resultLiveData.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
             }
         });
         
-        return result;
-    }
-
-    public LiveData<BaseResponse<List<ReservationResponse>>> getReservationsBySpecialty(int specialtyId, Date date) {
-        MutableLiveData<BaseResponse<List<ReservationResponse>>> result = new MutableLiveData<>();
-        
-        apiService.getReservationsBySpecialty(specialtyId, date).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<List<ReservationResponse>>> call, 
-                                 Response<BaseResponse<List<ReservationResponse>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get reservations by specialty", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<List<ReservationResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<ReservationResponse>> createReservation(ReservationCreateRequest request) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
-        
-        apiService.createReservation(request).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to create reservation", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<ReservationResponse>> updateReservation(int reservationId, ReservationUpdateRequest request) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
-        
-        apiService.updateReservation(reservationId, request).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to update reservation", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<ReservationResponse>> cancelReservation(int reservationId, String reason) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
-        
-        apiService.cancelReservation(reservationId, reason).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to cancel reservation", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<ReservationResponse>> approveReservation(int reservationId) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
-        
-        apiService.approveReservation(reservationId).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to approve reservation", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<ReservationResponse>> completeReservation(int reservationId) {
-        MutableLiveData<BaseResponse<ReservationResponse>> result = new MutableLiveData<>();
-        
-        apiService.completeReservation(reservationId).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<ReservationResponse>> call, 
-                                 Response<BaseResponse<ReservationResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to complete reservation", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<ReservationResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<Boolean>> checkSlotAvailability(int doctorScheduleId, Date appointmentDate) {
-        MutableLiveData<BaseResponse<Boolean>> result = new MutableLiveData<>();
-        
-        apiService.checkSlotAvailability(doctorScheduleId, appointmentDate).enqueue(new Callback<BaseResponse<Boolean>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<Boolean>> call, Response<BaseResponse<Boolean>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to check slot availability", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<Boolean>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<PaymentResponse>> createPayment(PaymentCreateRequest request) {
-        MutableLiveData<BaseResponse<PaymentResponse>> result = new MutableLiveData<>();
-        
-        apiService.createPayment(request).enqueue(new Callback<BaseResponse<PaymentResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<PaymentResponse>> call, 
-                                 Response<BaseResponse<PaymentResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to create payment", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<PaymentResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<List<PaymentResponse>>> getPaymentsByReservation(int reservationId) {
-        MutableLiveData<BaseResponse<List<PaymentResponse>>> result = new MutableLiveData<>();
-        
-        apiService.getPaymentsByReservation(reservationId).enqueue(new Callback<BaseResponse<List<PaymentResponse>>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<List<PaymentResponse>>> call, 
-                                 Response<BaseResponse<List<PaymentResponse>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get payments", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<List<PaymentResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<MedicalRecordResponse>> createMedicalRecord(MedicalRecordCreateRequest request) {
-        MutableLiveData<BaseResponse<MedicalRecordResponse>> result = new MutableLiveData<>();
-        
-        apiService.createMedicalRecord(request).enqueue(new Callback<BaseResponse<MedicalRecordResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<MedicalRecordResponse>> call, 
-                                 Response<BaseResponse<MedicalRecordResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to create medical record", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<MedicalRecordResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<List<MedicalRecordResponse>>> getMedicalRecordsByPatient(int patientId) {
-        MutableLiveData<BaseResponse<List<MedicalRecordResponse>>> result = new MutableLiveData<>();
-        
-        apiService.getMedicalRecordsByPatient(patientId).enqueue(new Callback<BaseResponse<List<MedicalRecordResponse>>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<List<MedicalRecordResponse>>> call, 
-                                 Response<BaseResponse<List<MedicalRecordResponse>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to get medical records", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<List<MedicalRecordResponse>>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
-    }
-
-    public LiveData<BaseResponse<FeedbackResponse>> createFeedback(FeedbackCreateRequest request) {
-        MutableLiveData<BaseResponse<FeedbackResponse>> result = new MutableLiveData<>();
-        
-        apiService.createFeedback(request).enqueue(new Callback<BaseResponse<FeedbackResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<FeedbackResponse>> call, 
-                                 Response<BaseResponse<FeedbackResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(response.body());
-                } else {
-                    result.setValue(new BaseResponse<>(false, "Failed to create feedback", null));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<FeedbackResponse>> call, Throwable t) {
-                result.setValue(new BaseResponse<>(false, t.getMessage(), null));
-            }
-        });
-        
-        return result;
+        return resultLiveData;
     }
 } 

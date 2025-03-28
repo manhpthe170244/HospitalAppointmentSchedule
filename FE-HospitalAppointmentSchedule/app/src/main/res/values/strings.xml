@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hospital Appointment Schedule</string>
+    <string name="app_name">Đặt lịch khám bệnh</string>
     
     <!-- Common -->
     <string name="ok">OK</string>
@@ -19,20 +19,20 @@
     <string name="unavailable">Unavailable</string>
     
     <!-- Auth -->
-    <string name="login">Login</string>
-    <string name="register">Register</string>
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
     <string name="email">Email</string>
-    <string name="password">Password</string>
+    <string name="password">Mật khẩu</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
     <string name="no_account">Don\'t have an account?</string>
     <string name="have_account">Already have an account?</string>
     
     <!-- Admin Dashboard -->
     <string name="admin_dashboard">Admin Dashboard</string>
-    <string name="doctors">Doctors</string>
-    <string name="specialties">Specialties</string>
-    <string name="services">Services</string>
+    <string name="doctors">Danh sách bác sĩ</string>
+    <string name="specialties">Chuyên khoa</string>
+    <string name="services">Dịch vụ khám</string>
     <string name="appointments">Appointments</string>
     <string name="users">Users</string>
     <string name="statistics">Statistics</string>
@@ -65,15 +65,15 @@
     
     <!-- Appointment Management -->
     <string name="appointment_details">Appointment Details</string>
-    <string name="appointment_date">Date</string>
-    <string name="appointment_time">Time</string>
-    <string name="appointment_status">Status</string>
+    <string name="appointment_date">Ngày khám</string>
+    <string name="appointment_time">Giờ khám</string>
+    <string name="appointment_status">Trạng thái</string>
     <string name="appointment_patient">Patient</string>
     <string name="appointment_doctor">Doctor</string>
     <string name="appointment_service">Service</string>
     <string name="approve_appointment">Approve</string>
     <string name="reject_appointment">Reject</string>
-    <string name="reschedule_appointment">Reschedule</string>
+    <string name="reschedule_appointment">Đổi lịch</string>
     
     <!-- User Management -->
     <string name="user_details">User Details</string>
@@ -102,4 +102,51 @@
     <string name="select_at_least_one_specialty">Please select at least one specialty</string>
     <string name="doctor_created">Doctor created successfully</string>
     <string name="doctor_updated">Doctor updated successfully</string>
+    
+    <!-- Strings for Login and Register -->
+    <string name="username">Tên đăng nhập</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="phone_number">Số điện thoại</string>
+    <string name="address">Địa chỉ</string>
+    <string name="create_account">Chưa có tài khoản? Đăng ký ngay</string>
+    <string name="already_have_account">Đã có tài khoản? Đăng nhập</string>
+    
+    <!-- Strings for Doctor -->
+    <string name="doctor_detail">Thông tin bác sĩ</string>
+    <string name="book_appointment">Đặt lịch khám</string>
+    <string name="academic_title">Học vị</string>
+    <string name="degree">Bằng cấp</string>
+    <string name="experience">Kinh nghiệm</string>
+    
+    <!-- Strings for Service -->
+    <string name="service_detail">Chi tiết dịch vụ</string>
+    <string name="price">Giá</string>
+    <string name="duration">Thời gian</string>
+    
+    <!-- Strings for Appointment -->
+    <string name="my_appointments">Lịch khám của tôi</string>
+    <string name="appointment_detail">Chi tiết lịch khám</string>
+    <string name="cancel_appointment">Hủy lịch</string>
+    
+    <!-- Strings for Profile -->
+    <string name="profile">Thông tin cá nhân</string>
+    <string name="update_profile">Cập nhật thông tin</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    
+    <!-- Strings for Home -->
+    <string name="home">Trang chủ</string>
+    <string name="featured_doctors">Bác sĩ nổi bật</string>
+    <string name="popular_services">Dịch vụ phổ biến</string>
+    
+    <!-- Strings for Settings -->
+    <string name="settings">Cài đặt</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="notification">Thông báo</string>
+    <string name="about">Thông tin ứng dụng</string>
+    <string name="privacy_policy">Chính sách bảo mật</string>
+    <string name="terms_conditions">Điều khoản sử dụng</string>
+    
+    <!-- Strings for Navigation -->
+    <string name="navigation_drawer_open">Mở navigation drawer</string>
+    <string name="navigation_drawer_close">Đóng navigation drawer</string>
 </resources>
