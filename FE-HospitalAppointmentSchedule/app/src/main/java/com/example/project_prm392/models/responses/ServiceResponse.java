@@ -6,16 +6,16 @@ import java.util.List;
 
 public class ServiceResponse {
     @SerializedName("serviceId")
-    private int serviceId;
+    private int id;
     
     @SerializedName("serviceName")
-    private String serviceName;
+    private String name;
     
     @SerializedName("description")
     private String description;
     
     @SerializedName("overview")
-    private String overview;
+    private String duration;
     
     @SerializedName("price")
     private double price;
@@ -32,20 +32,23 @@ public class ServiceResponse {
     @SerializedName("specialties")
     private List<String> specialties;
 
-    public int getServiceId() {
-        return serviceId;
+    public ServiceResponse() {
     }
 
-    public void setServiceId(int serviceId) {
-        this.serviceId = serviceId;
+    public int getId() {
+        return id;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -56,12 +59,12 @@ public class ServiceResponse {
         this.description = description;
     }
     
-    public String getOverview() {
-        return overview;
+    public String getDuration() {
+        return duration;
     }
 
-    public void setOverview(String overview) {
-        this.overview = overview;
+    public void setDuration(String duration) {
+        this.duration = duration;
     }
 
     public double getPrice() {

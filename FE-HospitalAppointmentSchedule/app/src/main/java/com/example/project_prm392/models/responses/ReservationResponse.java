@@ -1,27 +1,32 @@
 package com.example.project_prm392.models.responses;
 
+import java.util.Date;
+
 public class ReservationResponse {
-    private int reservationId;
+    private int id;
     private int patientId;
     private String patientName;
     private int doctorId;
     private String doctorName;
     private int serviceId;
     private String serviceName;
-    private double price;
-    private String appointmentDate;
+    private Date appointmentDate;
+    private String timeSlot;
     private String status;
-    private String reason;
-    private String createdDate;
-    private int slotId;
-    private String slotTime;
+    private double amount;
+    private String notes;
+    private Date createdAt;
+    private Date updatedAt;
 
-    public int getReservationId() {
-        return reservationId;
+    public ReservationResponse() {
     }
 
-    public void setReservationId(int reservationId) {
-        this.reservationId = reservationId;
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getPatientId() {
@@ -72,20 +77,20 @@ public class ReservationResponse {
         this.serviceName = serviceName;
     }
 
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getAppointmentDate() {
+    public Date getAppointmentDate() {
         return appointmentDate;
     }
 
-    public void setAppointmentDate(String appointmentDate) {
+    public void setAppointmentDate(Date appointmentDate) {
         this.appointmentDate = appointmentDate;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
     }
 
     public String getStatus() {
@@ -96,35 +101,44 @@ public class ReservationResponse {
         this.status = status;
     }
 
-    public String getReason() {
-        return reason;
+    public double getAmount() {
+        return amount;
     }
 
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
-    public String getCreatedDate() {
-        return createdDate;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setCreatedDate(String createdDate) {
-        this.createdDate = createdDate;
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
-    public int getSlotId() {
-        return slotId;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSlotId(int slotId) {
-        this.slotId = slotId;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getSlotTime() {
-        return slotTime;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setSlotTime(String slotTime) {
-        this.slotTime = slotTime;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getFormattedDate() {
+        // Implement date formatting logic
+        return appointmentDate.toString();
+    }
+
+    public String getFormattedTime() {
+        return timeSlot;
     }
 } 

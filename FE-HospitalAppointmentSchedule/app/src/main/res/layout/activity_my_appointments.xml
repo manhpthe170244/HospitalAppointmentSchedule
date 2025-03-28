@@ -37,6 +37,13 @@
                 android:clipToPadding="false"
                 android:padding="8dp" />
 
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/tvEmptyState"
                 android:layout_width="wrap_content"
@@ -44,13 +51,6 @@
                 android:layout_gravity="center"
                 android:text="No appointments found"
                 android:textSize="16sp"
-                android:visibility="gone" />
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:visibility="gone" />
 
         </FrameLayout>

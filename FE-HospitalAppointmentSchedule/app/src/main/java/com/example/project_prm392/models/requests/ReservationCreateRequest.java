@@ -1,36 +1,29 @@
 package com.example.project_prm392.models.requests;
 
-public class ReservationCreateRequest {
-    private int doctorScheduleId;
-    private int patientId;
-    private int serviceId;
-    private String appointmentDate;
-    private String reason;
-    private int slotId;
+import java.util.Date;
 
-    public ReservationCreateRequest(int doctorScheduleId, int patientId, int serviceId, String appointmentDate, String reason, int slotId) {
-        this.doctorScheduleId = doctorScheduleId;
-        this.patientId = patientId;
+public class ReservationCreateRequest {
+    private int doctorId;
+    private int serviceId;
+    private Date appointmentDate;
+    private String appointmentTime;
+    private String reason;
+
+    public ReservationCreateRequest(int doctorId, int serviceId, Date appointmentDate, 
+                                  String appointmentTime, String reason) {
+        this.doctorId = doctorId;
         this.serviceId = serviceId;
         this.appointmentDate = appointmentDate;
+        this.appointmentTime = appointmentTime;
         this.reason = reason;
-        this.slotId = slotId;
     }
 
-    public int getDoctorScheduleId() {
-        return doctorScheduleId;
+    public int getDoctorId() {
+        return doctorId;
     }
 
-    public void setDoctorScheduleId(int doctorScheduleId) {
-        this.doctorScheduleId = doctorScheduleId;
-    }
-
-    public int getPatientId() {
-        return patientId;
-    }
-
-    public void setPatientId(int patientId) {
-        this.patientId = patientId;
+    public void setDoctorId(int doctorId) {
+        this.doctorId = doctorId;
     }
 
     public int getServiceId() {
@@ -41,12 +34,20 @@ public class ReservationCreateRequest {
         this.serviceId = serviceId;
     }
 
-    public String getAppointmentDate() {
+    public Date getAppointmentDate() {
         return appointmentDate;
     }
 
-    public void setAppointmentDate(String appointmentDate) {
+    public void setAppointmentDate(Date appointmentDate) {
         this.appointmentDate = appointmentDate;
+    }
+
+    public String getAppointmentTime() {
+        return appointmentTime;
+    }
+
+    public void setAppointmentTime(String appointmentTime) {
+        this.appointmentTime = appointmentTime;
     }
 
     public String getReason() {
@@ -55,13 +56,5 @@ public class ReservationCreateRequest {
 
     public void setReason(String reason) {
         this.reason = reason;
-    }
-
-    public int getSlotId() {
-        return slotId;
-    }
-
-    public void setSlotId(int slotId) {
-        this.slotId = slotId;
     }
 } 

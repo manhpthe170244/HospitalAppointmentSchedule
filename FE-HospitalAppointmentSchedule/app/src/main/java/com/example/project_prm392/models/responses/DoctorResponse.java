@@ -44,6 +44,36 @@ public class DoctorResponse {
     @SerializedName("specialties")
     private List<String> specialties;
 
+    @SerializedName("id")
+    private int id;
+    
+    @SerializedName("name")
+    private String name;
+    
+    @SerializedName("specialization")
+    private String specialization;
+    
+    @SerializedName("qualification")
+    private String qualification;
+    
+    @SerializedName("experience")
+    private String experience;
+    
+    @SerializedName("imageUrl")
+    private String imageUrl;
+    
+    @SerializedName("isAvailable")
+    private boolean isAvailable;
+    
+    @SerializedName("rating")
+    private double rating;
+    
+    @SerializedName("totalRatings")
+    private int totalRatings;
+
+    public DoctorResponse() {
+    }
+
     public int getDoctorId() {
         return doctorId;
     }
@@ -146,5 +176,77 @@ public class DoctorResponse {
 
     public void setSpecialties(List<String> specialties) {
         this.specialties = specialties;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public String getQualification() {
+        return qualification;
+    }
+
+    public void setQualification(String qualification) {
+        this.qualification = qualification;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getTotalRatings() {
+        return totalRatings;
+    }
+
+    public void setTotalRatings(int totalRatings) {
+        this.totalRatings = totalRatings;
     }
 } 

@@ -3,70 +3,71 @@ package com.example.project_prm392.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-@Singleton
 public class SessionManager {
-    private static final String PREF_NAME = "hospital_app_session";
-    private static final String KEY_ACCESS_TOKEN = "access_token";
-    private static final String KEY_REFRESH_TOKEN = "refresh_token";
-    private static final String KEY_USER_ID = "user_id";
-    private static final String KEY_EMAIL = "email";
-    private static final String KEY_ROLE = "role";
-
+    private static final String PREF_NAME = "HospitalAppSession";
+    private static final String KEY_TOKEN = "token";
+    private static final String KEY_USER_ID = "userId";
+    private static final String KEY_USER_ROLE = "userRole";
+    private static final String KEY_USER_NAME = "userName";
+    
     private final SharedPreferences prefs;
     private final SharedPreferences.Editor editor;
+    private static SessionManager instance;
 
-    @Inject
-    public SessionManager(Context context) {
+    private SessionManager(Context context) {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         editor = prefs.edit();
     }
 
-    public void saveAuthTokens(String accessToken, String refreshToken) {
-        editor.putString(KEY_ACCESS_TOKEN, accessToken);
-        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+    public static synchronized SessionManager getInstance(Context context) {
+        if (instance == null) {
+            instance = new SessionManager(context.getApplicationContext());
+        }
+        return instance;
+    }
+
+    public void saveAuthToken(String token) {
+        editor.putString(KEY_TOKEN, token);
         editor.apply();
     }
 
-    public void saveUserInfo(String userId, String email, String role) {
-        editor.putString(KEY_USER_ID, userId);
-        editor.putString(KEY_EMAIL, email);
-        editor.putString(KEY_ROLE, role);
+    public String getAuthToken() {
+        return prefs.getString(KEY_TOKEN, null);
+    }
+
+    public void saveUserId(int userId) {
+        editor.putInt(KEY_USER_ID, userId);
         editor.apply();
     }
 
-    public String getAccessToken() {
-        return prefs.getString(KEY_ACCESS_TOKEN, null);
+    public int getUserId() {
+        return prefs.getInt(KEY_USER_ID, -1);
     }
 
-    public String getRefreshToken() {
-        return prefs.getString(KEY_REFRESH_TOKEN, null);
+    public void saveUserRole(String role) {
+        editor.putString(KEY_USER_ROLE, role);
+        editor.apply();
     }
 
-    public String getUserId() {
-        return prefs.getString(KEY_USER_ID, null);
+    public String getUserRole() {
+        return prefs.getString(KEY_USER_ROLE, null);
     }
 
-    public String getEmail() {
-        return prefs.getString(KEY_EMAIL, null);
+    public void saveUserName(String userName) {
+        editor.putString(KEY_USER_NAME, userName);
+        editor.apply();
     }
 
-    public String getRole() {
-        return prefs.getString(KEY_ROLE, null);
-    }
-
-    public boolean isLoggedIn() {
-        return getAccessToken() != null;
-    }
-
-    public boolean isAdmin() {
-        return "ADMIN".equalsIgnoreCase(getRole());
+    public String getUserName() {
+        return prefs.getString(KEY_USER_NAME, null);
     }
 
     public void clearSession() {
         editor.clear();
         editor.apply();
+    }
+
+    public boolean isLoggedIn() {
+        return getAuthToken() != null;
     }
 } 

@@ -1,25 +1,29 @@
 package com.example.project_prm392.models.responses;
 
 public class SpecialtyResponse {
-    private int specialtyId;
-    private String specialtyName;
+    private int id;
+    private String name;
     private String description;
     private String imageUrl;
+    private int doctorCount;
 
-    public int getSpecialtyId() {
-        return specialtyId;
+    public SpecialtyResponse() {
     }
 
-    public void setSpecialtyId(int specialtyId) {
-        this.specialtyId = specialtyId;
+    public int getId() {
+        return id;
     }
 
-    public String getSpecialtyName() {
-        return specialtyName;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setSpecialtyName(String specialtyName) {
-        this.specialtyName = specialtyName;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -36,5 +40,13 @@ public class SpecialtyResponse {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public int getDoctorCount() {
+        return doctorCount;
+    }
+
+    public void setDoctorCount(int doctorCount) {
+        this.doctorCount = doctorCount;
     }
 } 

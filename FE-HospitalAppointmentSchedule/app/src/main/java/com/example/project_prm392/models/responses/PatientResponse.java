@@ -1,22 +1,23 @@
-package com.example.project_prm392.models.requests;
+package com.example.project_prm392.models.responses;
 
-public class RegisterRequest {
+public class PatientResponse {
+    private int id;
     private String name;
     private String email;
-    private String password;
     private String phone;
     private String address;
-    private String gender;
     private String dateOfBirth;
+    private String gender;
 
-    public RegisterRequest(String name, String email, String password, String phone, String address, String gender, String dateOfBirth) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.address = address;
-        this.gender = gender;
-        this.dateOfBirth = dateOfBirth;
+    public PatientResponse() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -35,14 +36,6 @@ public class RegisterRequest {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -59,19 +52,19 @@ public class RegisterRequest {
         this.address = address;
     }
 
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
     public String getDateOfBirth() {
         return dateOfBirth;
     }
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 } 

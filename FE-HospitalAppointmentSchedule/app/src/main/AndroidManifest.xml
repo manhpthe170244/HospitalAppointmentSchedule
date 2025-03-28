@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".HospitalAppointmentApplication"
+        android:name=".HospitalApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -16,6 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HospitalAppointmentSchedule"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
         
         <!-- Màn hình chính của ứng dụng -->
@@ -40,7 +41,27 @@
         
         <!-- Các activity của Admin -->
         <activity android:name=".ui.DashboardActivity" />
-        <activity android:name=".ui.admin.AdminDashboardActivity" />
+        <activity
+            android:name=".ui.admin.AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminDoctorListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminPatientActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminRevenueActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminServiceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminSpecialtyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.user.AppointmentDetailsActivity"
+            android:exported="false" />
         <activity android:name=".ui.admin.ManageDoctorsActivity" />
         <activity android:name=".ui.admin.AddEditDoctorActivity" />
         <activity android:name=".ui.admin.ManageServicesActivity" />

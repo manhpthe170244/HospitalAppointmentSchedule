@@ -10,7 +10,7 @@
     <color name="blue">#FF0000FF</color>
     <color name="success">#4CAF50</color>
     <color name="error">#F44336</color>
-    <color name="statusPending">#FFA000</color>
+    <color name="statusPending">#FFA500</color>
     <color name="statusApproved">#4CAF50</color>
     <color name="statusCompleted">#2196F3</color>
     <color name="statusCancelled">#F44336</color>
