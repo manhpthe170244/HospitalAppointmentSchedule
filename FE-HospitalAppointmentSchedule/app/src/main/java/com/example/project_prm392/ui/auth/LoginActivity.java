@@ -85,35 +85,20 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setEnabled(false);
         
         // Call login API
-        authRepository.login(email, password).enqueue(new Callback<BaseResponse<LoginResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<LoginResponse>> call, Response<BaseResponse<LoginResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
-                
-                if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<LoginResponse> baseResponse = response.body();
-                    
-                    if (baseResponse.isSuccess() && baseResponse.getData() != null) {
-                        // Save login info
-                        authRepository.saveLoginInfo(baseResponse.getData());
-                        
-                        // Navigate to appropriate screen
-                        navigateToAppropriateScreen();
-                        finish();
-                    } else {
-                        Toast.makeText(LoginActivity.this, baseResponse.getMessage(), Toast.LENGTH_LONG).show();
-                    }
+        authRepository.login(email, password).observe(this, result -> {
+            progressBar.setVisibility(View.GONE);
+            btnLogin.setEnabled(true);
+            
+            if (result != null) {
+                if (result.isSuccess() && result.getData() != null) {
+                    // Navigate to appropriate screen
+                    navigateToAppropriateScreen();
+                    finish();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Login failed. Please try again.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, result.getMessage(), Toast.LENGTH_LONG).show();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<LoginResponse>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
-                Toast.makeText(LoginActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(LoginActivity.this, "Login failed. Please try again.", Toast.LENGTH_LONG).show();
             }
         });
     }

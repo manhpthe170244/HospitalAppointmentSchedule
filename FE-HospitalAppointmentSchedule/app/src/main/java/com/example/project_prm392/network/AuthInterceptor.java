@@ -1,5 +1,6 @@
 package com.example.project_prm392.network;
 
+import androidx.annotation.NonNull;
 import com.example.project_prm392.utils.SessionManager;
 
 import java.io.IOException;
@@ -16,7 +17,8 @@ public class AuthInterceptor implements Interceptor {
     SessionManager sessionManager;
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
+    @NonNull
+    public Response intercept(@NonNull Chain chain) throws IOException {
         Request originalRequest = chain.request();
         
         // Skip adding auth token for login and register endpoints

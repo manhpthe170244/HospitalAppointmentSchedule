@@ -37,6 +37,12 @@ public class DoctorScheduleResponse {
     @SerializedName("isAvailable")
     private boolean isAvailable;
 
+    @SerializedName("startTime")
+    private String startTime;
+
+    @SerializedName("endTime")
+    private String endTime;
+
     // Getters and Setters
 
     public int getDoctorScheduleId() {
@@ -125,5 +131,21 @@ public class DoctorScheduleResponse {
 
     public void setAvailable(boolean available) {
         isAvailable = available;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 } 

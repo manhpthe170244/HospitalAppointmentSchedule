@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -34,7 +33,6 @@ import com.example.project_prm392.repository.DoctorRepository;
 import com.example.project_prm392.repository.ReservationRepository;
 import com.example.project_prm392.repository.ServiceRepository;
 import com.example.project_prm392.utils.SessionManager;
-import com.example.project_prm392.network.ApiService;
 import com.example.project_prm392.utils.Constants;
 
 import java.text.SimpleDateFormat;
@@ -47,26 +45,22 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 @AndroidEntryPoint
 public class BookAppointmentActivity extends AppCompatActivity implements TimeSlotAdapter.OnTimeSlotSelectedListener {
 
     private Toolbar toolbar;
     private TextView tvDoctorName, tvSpecialty;
-    private CalendarView calendarView;
     private RecyclerView recyclerViewTimeSlots;
     private EditText etReason;
     private Button btnConfirmAppointment;
     private ProgressBar progressBar;
     
     private TimeSlotAdapter timeSlotAdapter;
-    private List<SlotResponse> timeSlots = new ArrayList<>();
+    private final List<SlotResponse> timeSlots = new ArrayList<>();
     
     private int doctorId;
-    private int serviceId = 1; // Default service ID, would be replaced with actual service selection
+    private int serviceId = 1; // Default service ID
     private String selectedDate;
     private int selectedDoctorScheduleId;
     
@@ -81,23 +75,17 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
     
     @Inject
     SessionManager sessionManager;
-    
-    @Inject
-    ApiService apiService;
-    
 
     private EditText etDate;
-
     private Spinner spinnerService;
     private Spinner spinnerSchedule;
     private Button btnBook;
-    
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault());
     private final SimpleDateFormat displayDateFormat = new SimpleDateFormat(Constants.DISPLAY_DATE_FORMAT, Locale.getDefault());
     
-    private List<ServiceResponse> services = new ArrayList<>();
-    private List<DoctorScheduleResponse> schedules = new ArrayList<>();
+    private final List<ServiceResponse> services = new ArrayList<>();
+    private final List<DoctorScheduleResponse> schedules = new ArrayList<>();
     private int selectedServiceId = -1;
     private int selectedScheduleId = -1;
     
@@ -106,21 +94,17 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_appointment);
         
-        // Get doctor ID from intent if available
         doctorId = getIntent().getIntExtra("doctorId", -1);
         
         initViews();
         setupToolbar();
-        setupCalendar();
+        setupDatePicker();
         setupRecyclerView();
         
         if (doctorId != -1) {
             loadDoctorDetails();
         }
         
-        btnConfirmAppointment.setOnClickListener(v -> bookAppointment());
-        
-        // Get data from intent
         String doctorName = getIntent().getStringExtra("doctorName");
         String specialty = getIntent().getStringExtra("specialty");
         
@@ -129,7 +113,79 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
             tvSpecialty.setText(specialty);
         }
         
-        // Set up spinners
+        setupSpinners();
+        setupButtons();
+        
+        loadServices();
+        loadSchedules();
+    }
+    
+    private void initViews() {
+        toolbar = findViewById(R.id.toolbar);
+        tvDoctorName = findViewById(R.id.tvDoctorName);
+        tvSpecialty = findViewById(R.id.tvSpecialty);
+        recyclerViewTimeSlots = findViewById(R.id.recyclerViewTimeSlots);
+        etReason = findViewById(R.id.etReason);
+        btnConfirmAppointment = findViewById(R.id.btnConfirmAppointment);
+        progressBar = findViewById(R.id.progressBar);
+        
+        spinnerService = findViewById(R.id.spinnerService);
+        spinnerSchedule = findViewById(R.id.spinnerSchedule);
+        btnBook = findViewById(R.id.btnBook);
+        etDate = findViewById(R.id.etDate);
+    }
+    
+    private void setupToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Book Appointment");
+        }
+    }
+    
+    private void setupDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        etDate.setOnClickListener(v -> {
+            DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(Calendar.YEAR, year);
+                    calendar.set(Calendar.MONTH, month);
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    
+                    selectedDate = dateFormat.format(calendar.getTime());
+                    etDate.setText(displayDateFormat.format(calendar.getTime()));
+                    
+                    if (doctorId != -1) {
+                        loadTimeSlots();
+                    }
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            );
+            
+            // Set min date to today
+            datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+            
+            // Set max date to 3 months from now
+            Calendar maxDate = Calendar.getInstance();
+            maxDate.add(Calendar.MONTH, 3);
+            datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+            
+            datePickerDialog.show();
+        });
+    }
+    
+    private void setupRecyclerView() {
+        recyclerViewTimeSlots.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        timeSlotAdapter = new TimeSlotAdapter(timeSlots);
+        timeSlotAdapter.setOnTimeSlotSelectedListener(this);
+        recyclerViewTimeSlots.setAdapter(timeSlotAdapter);
+    }
+    
+    private void setupSpinners() {
+        // Service spinner
         spinnerService.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -146,6 +202,7 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
             }
         });
         
+        // Schedule spinner
         spinnerSchedule.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -161,279 +218,189 @@ public class BookAppointmentActivity extends AppCompatActivity implements TimeSl
                 selectedScheduleId = -1;
             }
         });
-        
-        // Set up book button
+    }
+    
+    private void setupButtons() {
         btnBook.setOnClickListener(v -> bookAppointment());
-        
-        // Load services and schedules
-        loadServices();
-        loadSchedules();
-    }
-    
-    private void initViews() {
-        toolbar = findViewById(R.id.toolbar);
-        tvDoctorName = findViewById(R.id.tvDoctorName);
-        tvSpecialty = findViewById(R.id.tvSpecialty);
-        calendarView = findViewById(R.id.calendarView);
-        recyclerViewTimeSlots = findViewById(R.id.recyclerViewTimeSlots);
-        etReason = findViewById(R.id.etReason);
-        btnConfirmAppointment = findViewById(R.id.btnConfirmAppointment);
-        progressBar = findViewById(R.id.progressBar);
-        
-        // Initialize spinners
-        spinnerService = findViewById(R.id.spinnerService);
-        spinnerSchedule = findViewById(R.id.spinnerSchedule);
-        btnBook = findViewById(R.id.btnBook);
-        etDate = findViewById(R.id.etDate);
-    }
-    
-    private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-    }
-    
-    private void setupCalendar() {
-        // Set minimum date to today
-        Calendar calendar = Calendar.getInstance();
-        long today = calendar.getTimeInMillis();
-        calendarView.setMinDate(today);
-        
-        // Set maximum date to 3 months from now
-        calendar.add(Calendar.MONTH, 3);
-        long maxDate = calendar.getTimeInMillis();
-        calendarView.setMaxDate(maxDate);
-        
-        // Set default date
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        selectedDate = sdf.format(new Date(today));
-        
-        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
-            Calendar selected = Calendar.getInstance();
-            selected.set(year, month, dayOfMonth);
-            
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            selectedDate = dateFormat.format(selected.getTime());
-            
-            // Load available time slots for the selected date
-            if (doctorId != -1) {
-                loadTimeSlots();
-            }
-        });
-    }
-    
-    private void setupRecyclerView() {
-        recyclerViewTimeSlots.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        timeSlotAdapter = new TimeSlotAdapter(timeSlots);
-        timeSlotAdapter.setOnTimeSlotSelectedListener(this);
-        recyclerViewTimeSlots.setAdapter(timeSlotAdapter);
+        btnConfirmAppointment.setOnClickListener(v -> bookAppointment());
     }
     
     private void loadDoctorDetails() {
         progressBar.setVisibility(View.VISIBLE);
         
-        doctorRepository.getDoctorById(doctorId).enqueue(new Callback<BaseResponse<DoctorDetailsResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<DoctorDetailsResponse>> call, Response<BaseResponse<DoctorDetailsResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    DoctorDetailsResponse doctor = response.body().getData();
-                    
-                    tvDoctorName.setText(doctor.getUserName());
-                    
-                    if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
-                        tvSpecialty.setText(doctor.getSpecialties().get(0).getSpecialtyName());
-                        
-                        // Assuming the first service for the first specialty
-                        if (doctor.getServices() != null && !doctor.getServices().isEmpty()) {
-                            serviceId = doctor.getServices().get(0).getServiceId();
-                        }
-                    }
-                    
-                    // Load available time slots
-                    loadTimeSlots();
-                } else {
-                    Toast.makeText(BookAppointmentActivity.this, "Failed to load doctor details", Toast.LENGTH_SHORT).show();
-                }
-            }
+        doctorRepository.getDoctorById(doctorId).observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
             
-            @Override
-            public void onFailure(Call<BaseResponse<DoctorDetailsResponse>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            if (response != null && response.isSuccess()) {
+                DoctorDetailsResponse doctor = response.getData();
+                
+                tvDoctorName.setText(doctor.getUserName());
+                
+                if (doctor.getSpecialties() != null && !doctor.getSpecialties().isEmpty()) {
+                    tvSpecialty.setText(doctor.getSpecialties().get(0).getSpecialtyName());
+                }
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to load doctor details";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
     
     private void loadTimeSlots() {
-        progressBar.setVisibility(View.VISIBLE);
-        
-        // In a real app, you would fetch available schedules and slots from the API
-        // For this example, we'll create some dummy time slots
-        timeSlots.clear();
-        
-        // Create dummy time slots
-        for (int i = 9; i < 17; i++) {
-            SlotResponse slot = new SlotResponse();
-            slot.setSlotId(i - 8);
-            slot.setStartTime(String.format(Locale.getDefault(), "%02d:00", i));
-            slot.setEndTime(String.format(Locale.getDefault(), "%02d:30", i));
-            slot.setAvailable(true);
-            timeSlots.add(slot);
-            
-            SlotResponse slot2 = new SlotResponse();
-            slot2.setSlotId(i - 8 + 10);
-            slot2.setStartTime(String.format(Locale.getDefault(), "%02d:30", i));
-            slot2.setEndTime(String.format(Locale.getDefault(), "%02d:00", i + 1));
-            slot2.setAvailable(i != 12); // Make 12:30-13:00 unavailable as an example
-            timeSlots.add(slot2);
+        if (selectedDate == null || selectedScheduleId == -1) {
+            return;
         }
         
-        // In a real app, you would set a default schedule ID based on the doctor's schedules
-        selectedDoctorScheduleId = 1;
+        progressBar.setVisibility(View.VISIBLE);
+        timeSlots.clear();
+        timeSlotAdapter.notifyDataSetChanged();
         
-        timeSlotAdapter.setTimeSlots(timeSlots);
-        progressBar.setVisibility(View.GONE);
+        doctorRepository.getDoctorTimeSlots(doctorId, selectedDate).observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
+            
+            if (response != null && response.isSuccess()) {
+                List<SlotResponse> slots = response.getData();
+                if (slots != null) {
+                    timeSlots.addAll(slots);
+                    timeSlotAdapter.notifyDataSetChanged();
+                }
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to load time slots";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     private void loadServices() {
         progressBar.setVisibility(View.VISIBLE);
         
-        apiService.getServicesBySpecialty(1).enqueue(new Callback<BaseResponse<List<ServiceResponse>>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<List<ServiceResponse>>> call, Response<BaseResponse<List<ServiceResponse>>> response) {
-                progressBar.setVisibility(View.GONE);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    services = response.body().getData();
+        serviceRepository.getAllServices().observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
+            
+            if (response != null && response.isSuccess()) {
+                List<ServiceResponse> serviceList = response.getData();
+                if (serviceList != null) {
+                    services.clear();
+                    services.addAll(serviceList);
                     
-                    // Create spinner options
                     List<String> serviceNames = new ArrayList<>();
-                    serviceNames.add("Select Service");
+                    serviceNames.add("Select a service");
                     for (ServiceResponse service : services) {
-                        serviceNames.add(service.getServiceName() + " - $" + service.getPrice());
+                        serviceNames.add(service.getServiceName());
                     }
                     
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            BookAppointmentActivity.this,
-                            android.R.layout.simple_spinner_item,
-                            serviceNames
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        serviceNames
                     );
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerService.setAdapter(adapter);
-                } else {
-                    Toast.makeText(BookAppointmentActivity.this, "Error loading services", Toast.LENGTH_SHORT).show();
                 }
-            }
-            
-            @Override
-            public void onFailure(Call<BaseResponse<List<ServiceResponse>>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to load services";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
     
     private void loadSchedules() {
+        if (doctorId == -1) {
+            return;
+        }
+        
         progressBar.setVisibility(View.VISIBLE);
         
-        apiService.getDoctorSchedules(doctorId, dateFormat.format(selectedDate.getTime())).enqueue(new Callback<BaseResponse<List<DoctorScheduleResponse>>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<List<DoctorScheduleResponse>>> call, Response<BaseResponse<List<DoctorScheduleResponse>>> response) {
-                progressBar.setVisibility(View.GONE);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    schedules = response.body().getData();
+        doctorRepository.getDoctorSchedules(doctorId).observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
+            
+            if (response != null && response.isSuccess()) {
+                List<DoctorScheduleResponse> scheduleList = response.getData();
+                if (scheduleList != null) {
+                    schedules.clear();
+                    schedules.addAll(scheduleList);
                     
-                    // Create spinner options
-                    List<String> scheduleOptions = new ArrayList<>();
-                    scheduleOptions.add("Select Time Slot");
+                    List<String> scheduleNames = new ArrayList<>();
+                    scheduleNames.add("Select a schedule");
                     for (DoctorScheduleResponse schedule : schedules) {
-                        scheduleOptions.add(schedule.getDayOfWeek() + " - " + schedule.getSlotTime());
+                        scheduleNames.add(schedule.getDay() + " " + schedule.getStartTime() + " - " + schedule.getEndTime());
                     }
                     
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            BookAppointmentActivity.this,
-                            android.R.layout.simple_spinner_item,
-                            scheduleOptions
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        scheduleNames
                     );
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerSchedule.setAdapter(adapter);
-                } else {
-                    Toast.makeText(BookAppointmentActivity.this, "Error loading schedules", Toast.LENGTH_SHORT).show();
                 }
-            }
-            
-            @Override
-            public void onFailure(Call<BaseResponse<List<DoctorScheduleResponse>>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to load schedules";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
     
     private void bookAppointment() {
-        if (selectedServiceId == -1 || selectedScheduleId == -1 || etDate.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+        if (selectedServiceId == -1) {
+            Toast.makeText(this, "Please select a service", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        progressBar.setVisibility(View.VISIBLE);
         
-        try {
-            Date selectedDate = dateFormat.parse(etDate.getText().toString().trim());
-            String reason = etReason.getText().toString().trim();
-            
-            if (reason.isEmpty()) {
-                reason = "General checkup";
-            }
-            
-            // Create reservation request with all required parameters including slotId
-            ReservationCreateRequest request = new ReservationCreateRequest(
-                selectedScheduleId,  // doctorScheduleId
-                sessionManager.getUserId(),  // patientId
-                selectedServiceId,  // serviceId
-                dateFormat.format(selectedDate),  // appointmentDate
-                reason,  // reason
-                0  // slotId - default to 0 if not used
-            );
-            
-            reservationRepository.createReservation(request).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-                @Override
-                public void onResponse(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Response<BaseResponse<ReservationResponse>> response) {
-                    progressBar.setVisibility(View.GONE);
-                    
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(BookAppointmentActivity.this, "Appointment booked successfully", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(BookAppointmentActivity.this, "Failed to book appointment", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                
-                @Override
-                public void onFailure(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(BookAppointmentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        } catch (Exception e) {
-            progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Invalid date format", Toast.LENGTH_SHORT).show();
+        if (selectedDate == null) {
+            Toast.makeText(this, "Please select a date", Toast.LENGTH_SHORT).show();
+            return;
         }
+        
+        if (selectedScheduleId == -1) {
+            Toast.makeText(this, "Please select a schedule", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String reason = etReason.getText().toString().trim();
+        if (reason.isEmpty()) {
+            etReason.setError("Please enter a reason");
+            etReason.requestFocus();
+            return;
+        }
+        
+        progressBar.setVisibility(View.VISIBLE);
+        btnBook.setEnabled(false);
+        btnConfirmAppointment.setEnabled(false);
+        
+        ReservationCreateRequest request = new ReservationCreateRequest(
+            sessionManager.getUserId(),
+            doctorId,
+            selectedServiceId,
+            selectedScheduleId,
+            selectedDate,
+            reason
+        );
+        
+        reservationRepository.createReservation(request).observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
+            btnBook.setEnabled(true);
+            btnConfirmAppointment.setEnabled(true);
+            
+            if (response != null && response.isSuccess()) {
+                Toast.makeText(this, "Appointment booked successfully", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to book appointment";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     @Override
-    public void onTimeSlotSelected(int position) {
-        // This is called when a time slot is selected in the adapter
+    public void onTimeSlotSelected(SlotResponse slot) {
+        selectedScheduleId = slot.getDoctorScheduleId();
     }
     
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish();
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

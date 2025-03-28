@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import com.example.project_prm392.R;
 import com.example.project_prm392.models.requests.RegisterRequest;
@@ -20,17 +21,9 @@ import com.example.project_prm392.repository.AuthRepository;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 @AndroidEntryPoint
 public class RegisterActivity extends AppCompatActivity {
-    
-    private EditText etName, etEmail, etPassword, etConfirmPassword, etPhone;
-    private Button btnRegister;
-    private TextView tvLogin;
-    private ProgressBar progressBar;
     
     @Inject
     AuthRepository authRepository;
@@ -41,23 +34,32 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
         
         // Initialize views
-        etName = findViewById(R.id.etName);
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        etPhone = findViewById(R.id.etPhone);
-        btnRegister = findViewById(R.id.btnRegister);
-        tvLogin = findViewById(R.id.tvLogin);
-        progressBar = findViewById(R.id.progressBar);
+        EditText etName = findViewById(R.id.etName);
+        EditText etEmail = findViewById(R.id.etEmail);
+        EditText etPassword = findViewById(R.id.etPassword);
+        EditText etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        EditText etPhone = findViewById(R.id.etPhone);
+        Button btnRegister = findViewById(R.id.btnRegister);
+        TextView tvLogin = findViewById(R.id.tvLogin);
+        ProgressBar progressBar = findViewById(R.id.progressBar);
         
         // Set up click listeners
-        btnRegister.setOnClickListener(v -> registerUser());
-        tvLogin.setOnClickListener(v -> {
-            finish();
-        });
+        btnRegister.setOnClickListener(view -> registerUser(
+            etName, etEmail, etPassword, etConfirmPassword, etPhone, btnRegister, progressBar
+        ));
+        
+        tvLogin.setOnClickListener(view -> finish());
     }
     
-    private void registerUser() {
+    private void registerUser(
+        EditText etName, 
+        EditText etEmail, 
+        EditText etPassword, 
+        EditText etConfirmPassword,
+        EditText etPhone,
+        Button btnRegister,
+        ProgressBar progressBar
+    ) {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
@@ -108,37 +110,22 @@ public class RegisterActivity extends AppCompatActivity {
         // Create register request
         RegisterRequest registerRequest = new RegisterRequest(email, password, name, phone);
         
-        // Call register API
-        authRepository.register(registerRequest).enqueue(new Callback<BaseResponse<UserResponse>>() {
-            @Override
-            public void onResponse(Call<BaseResponse<UserResponse>> call, Response<BaseResponse<UserResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                btnRegister.setEnabled(true);
+        // Call register API and observe result
+        authRepository.register(registerRequest).observe(this, response -> {
+            progressBar.setVisibility(View.GONE);
+            btnRegister.setEnabled(true);
+            
+            if (response != null && response.isSuccess()) {
+                Toast.makeText(this, "Registration successful. Please login.", Toast.LENGTH_LONG).show();
                 
-                if (response.isSuccessful() && response.body() != null) {
-                    BaseResponse<UserResponse> baseResponse = response.body();
-                    
-                    if (baseResponse.isSuccess()) {
-                        Toast.makeText(RegisterActivity.this, "Registration successful. Please login.", Toast.LENGTH_LONG).show();
-                        
-                        // Navigate to login screen
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(RegisterActivity.this, baseResponse.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Registration failed. Please try again.", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseResponse<UserResponse>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                btnRegister.setEnabled(true);
-                Toast.makeText(RegisterActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                // Navigate to login screen
+                Intent intent = new Intent(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            } else {
+                String message = response != null ? response.getMessage() : "Registration failed. Please try again.";
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
         });
     }

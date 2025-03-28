@@ -107,61 +107,50 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
         
         int patientId = sessionManager.getUserId();
         
-        reservationRepository.getReservationsByPatient(patientId).enqueue(new Callback<BaseResponse<List<ReservationResponse>>>() {
-            @Override
-            public void onResponse(@NonNull Call<BaseResponse<List<ReservationResponse>>> call, @NonNull Response<BaseResponse<List<ReservationResponse>>> response) {
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+        reservationRepository.getReservationsByPatient(patientId).observe(getViewLifecycleOwner(), response -> {
+            progressBar.setVisibility(View.GONE);
+            swipeRefreshLayout.setRefreshing(false);
+            
+            if (response != null && response.isSuccess()) {
+                List<ReservationResponse> allAppointments = response.getData();
                 
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    List<ReservationResponse> allAppointments = response.body().getData();
-                    
-                    // Filter appointments based on status type
-                    List<ReservationResponse> filteredAppointments = new ArrayList<>();
-                    
-                    if (allAppointments != null) {
-                        filteredAppointments = switch (statusType) {
-                            case TYPE_UPCOMING -> allAppointments.stream()
-                                    .filter(appointment -> 
-                                        "confirmed".equalsIgnoreCase(appointment.getStatus()) || 
-                                        "approved".equalsIgnoreCase(appointment.getStatus()) || 
-                                        "pending".equalsIgnoreCase(appointment.getStatus()))
-                                    .collect(Collectors.toList());
-                            case TYPE_PAST -> allAppointments.stream()
-                                    .filter(appointment -> "completed".equalsIgnoreCase(appointment.getStatus()))
-                                    .collect(Collectors.toList());
-                            case TYPE_CANCELLED -> allAppointments.stream()
-                                    .filter(appointment -> "cancelled".equalsIgnoreCase(appointment.getStatus()))
-                                    .collect(Collectors.toList());
-                            default -> new ArrayList<>();
-                        };
-                    }
-                    
-                    appointmentsList.clear();
-                    appointmentsList.addAll(filteredAppointments);
-                    appointmentAdapter.notifyDataSetChanged();
-                    
-                    if (appointmentsList.isEmpty()) {
-                        tvNoAppointments.setVisibility(View.VISIBLE);
-                        recyclerViewAppointments.setVisibility(View.GONE);
-                    } else {
-                        tvNoAppointments.setVisibility(View.GONE);
-                        recyclerViewAppointments.setVisibility(View.VISIBLE);
-                    }
-                } else {
+                // Filter appointments based on status type
+                List<ReservationResponse> filteredAppointments = new ArrayList<>();
+                
+                if (allAppointments != null) {
+                    filteredAppointments = switch (statusType) {
+                        case TYPE_UPCOMING -> allAppointments.stream()
+                                .filter(appointment -> 
+                                    "confirmed".equalsIgnoreCase(appointment.getStatus()) || 
+                                    "approved".equalsIgnoreCase(appointment.getStatus()) || 
+                                    "pending".equalsIgnoreCase(appointment.getStatus()))
+                                .collect(Collectors.toList());
+                        case TYPE_PAST -> allAppointments.stream()
+                                .filter(appointment -> "completed".equalsIgnoreCase(appointment.getStatus()))
+                                .collect(Collectors.toList());
+                        case TYPE_CANCELLED -> allAppointments.stream()
+                                .filter(appointment -> "cancelled".equalsIgnoreCase(appointment.getStatus()))
+                                .collect(Collectors.toList());
+                        default -> new ArrayList<>();
+                    };
+                }
+                
+                appointmentsList.clear();
+                appointmentsList.addAll(filteredAppointments);
+                appointmentAdapter.notifyDataSetChanged();
+                
+                if (appointmentsList.isEmpty()) {
                     tvNoAppointments.setVisibility(View.VISIBLE);
                     recyclerViewAppointments.setVisibility(View.GONE);
-                    Toast.makeText(requireContext(), "Failed to load appointments", Toast.LENGTH_SHORT).show();
+                } else {
+                    tvNoAppointments.setVisibility(View.GONE);
+                    recyclerViewAppointments.setVisibility(View.VISIBLE);
                 }
-            }
-            
-            @Override
-            public void onFailure(@NonNull Call<BaseResponse<List<ReservationResponse>>> call, @NonNull Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+            } else {
                 tvNoAppointments.setVisibility(View.VISIBLE);
                 recyclerViewAppointments.setVisibility(View.GONE);
-                Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                String message = response != null ? response.getMessage() : "Failed to load appointments";
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -200,23 +189,15 @@ public class AppointmentListFragment extends Fragment implements AppointmentAdap
     private void cancelAppointment(int reservationId, String reason) {
         progressBar.setVisibility(View.VISIBLE);
         
-        reservationRepository.cancelReservation(reservationId, reason).enqueue(new Callback<BaseResponse<ReservationResponse>>() {
-            @Override
-            public void onResponse(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Response<BaseResponse<ReservationResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(requireContext(), "Appointment cancelled successfully", Toast.LENGTH_SHORT).show();
-                    loadAppointments();
-                } else {
-                    Toast.makeText(requireContext(), "Failed to cancel appointment", Toast.LENGTH_SHORT).show();
-                }
-            }
+        reservationRepository.cancelReservation(reservationId, reason).observe(getViewLifecycleOwner(), response -> {
+            progressBar.setVisibility(View.GONE);
             
-            @Override
-            public void onFailure(@NonNull Call<BaseResponse<ReservationResponse>> call, @NonNull Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            if (response != null && response.isSuccess()) {
+                Toast.makeText(requireContext(), "Appointment cancelled successfully", Toast.LENGTH_SHORT).show();
+                loadAppointments();
+            } else {
+                String message = response != null ? response.getMessage() : "Failed to cancel appointment";
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
             }
         });
     }
